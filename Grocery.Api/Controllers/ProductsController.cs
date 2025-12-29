@@ -20,13 +20,15 @@ namespace Grocery.Api.Controllers
         private readonly IProductRepository _repo;
         private readonly ChipHtmlParser _chipParser;
         private readonly ChipApiClient _chipApiClient;
+        private readonly IPhotoService _photoService;
 
 
-        public ProductsController(IProductRepository repo, ChipHtmlParser chipParser, ChipApiClient chipApiClient)
+        public ProductsController(IProductRepository repo, ChipHtmlParser chipParser, ChipApiClient chipApiClient, IPhotoService photoService)
         {
             _repo = repo;
             _chipApiClient = chipApiClient;
             _chipParser = chipParser;
+            _photoService = photoService;
         }
 
         // GET /api/products?query=&page=&pageSize=
@@ -70,11 +72,8 @@ namespace Grocery.Api.Controllers
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-            if (!string.IsNullOrWhiteSpace(dto.Sku))
-            {
-                var exists = await _repo.SkuExistsAsync(dto.Sku!, null, ct);
-                if (exists) return Conflict($"SKU '{dto.Sku}' already exists.");
-            }
+            var exists = await _repo.SkuExistsAsync(dto.Sku, null, ct);
+            if (exists) return Conflict($"SKU '{dto.Sku}' already exists.");
 
             var now = DateTime.UtcNow;
             var p = new Product
@@ -98,11 +97,8 @@ namespace Grocery.Api.Controllers
             var existing = await _repo.GetByIdAsync(id, ct);
             if (existing is null) return NotFound();
 
-            if (!string.IsNullOrWhiteSpace(dto.Sku))
-            {
-                var exists = await _repo.SkuExistsAsync(dto.Sku!, id, ct);
-                if (exists) return Conflict($"SKU '{dto.Sku}' already exists.");
-            }
+            var exists = await _repo.SkuExistsAsync(dto.Sku, id, ct);
+            if (exists) return Conflict($"SKU '{dto.Sku}' already exists.");
 
             existing.Apply(dto);
             existing.UpdatedAt = DateTime.UtcNow;
@@ -118,6 +114,28 @@ namespace Grocery.Api.Controllers
         {
             var ok = await _repo.DeleteAsync(id, ct);
             return ok ? NoContent() : NotFound();
+        }
+
+        [HttpGet("photo-by-sku/{sku}")]
+        public async Task<IActionResult> PhotoBySku(
+        [FromRoute] string sku,
+        [FromServices] DuckDuckGoImageService ddg,
+        CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(sku))
+                return BadRequest("SKU is required.");
+
+            // Optional: use repo to enrich the query with product name/brand
+            var p = await _repo.GetBySkuAsync(sku, ct);
+            var query = p is null
+                ? $"{sku} product photo"
+                : $"{p.Name} {sku} product photo";
+
+            var result = await ddg.SearchAndDownloadFirstImageAsync(query, ct: ct);
+            if (result is null)
+                return NotFound(new { message = "No image found for this SKU", sku, query });
+
+            return File(result.Value.Bytes, result.Value.ContentType);
         }
 
         /// <summary>
