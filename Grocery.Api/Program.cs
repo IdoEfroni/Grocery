@@ -16,6 +16,8 @@ builder.Services.AddDbContext<StoreDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddHttpClient<DuckDuckGoImageService>();
+builder.Services.AddHttpClient<IPhotoService, PhotoService>();
 builder.Services.AddHttpClient("ChpCompare");
 builder.Services.AddScoped<ChipHtmlParser>();
 builder.Services.AddScoped<ChipApiClient>();

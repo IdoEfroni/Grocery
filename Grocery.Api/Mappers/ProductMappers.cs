@@ -13,7 +13,7 @@ namespace Grocery.Api.Mappers
             p.Name = dto.Name.Trim();
             p.Description = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim();
             p.Price = dto.Price;
-            p.Sku = string.IsNullOrWhiteSpace(dto.Sku) ? null : dto.Sku.Trim();
+            p.Sku = dto.Sku.Trim();
         }
     }
 }

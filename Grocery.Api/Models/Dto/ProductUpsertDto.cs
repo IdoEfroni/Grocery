@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Grocery.Api.Models.Dto
 {
@@ -13,8 +14,11 @@ namespace Grocery.Api.Models.Dto
         [Range(0, 9999999)]
         public decimal Price { get; set; }
 
-        // Optional but if provided we’ll enforce uniqueness
-        [StringLength(128)]
-        public string? Sku { get; set; }
+        [Required, StringLength(128)]
+        public string Sku { get; set; } = default!;
+
+        public IFormFile? PhotoFile { get; set; }
+
+        public string? PhotoUrl { get; set; }
     }
 }

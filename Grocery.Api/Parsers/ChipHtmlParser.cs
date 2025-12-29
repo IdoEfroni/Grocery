@@ -14,8 +14,9 @@ namespace Grocery.Api.Parsers
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            var table = doc.DocumentNode.SelectSingleNode("//table[@id='results-table']");
-            if (table is null) return results;
+            var table = doc.DocumentNode.SelectSingleNode(
+                "//table[@id='results-table' or contains(concat(' ', normalize-space(@class), ' '), ' results-table ')]"
+            ); if (table is null) return results;
 
             var rowNodes = table.SelectNodes(".//tbody/tr[not(contains(@class,'display_when_narrow'))]");
             if (rowNodes is null) return results;
