@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-Grocery.ThumbnailService-a3f298f5-2a09-49e9-836b-6ea044ac91a8</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.22.0" />
+    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.3.3" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Grocery.Api\Grocery.Api.csproj" />
+  </ItemGroup>
+</Project>

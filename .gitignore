@@ -3,3 +3,9 @@ obj/
 .vs/
 *.user
 *.suo
+
+# Configuration files with secrets
+**/appsettings.json
+**/appsettings.*.json
+.env
+.env.local

@@ -68,9 +68,17 @@ namespace Grocery.Api.Controllers
 
         // POST /api/products
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> Create([FromBody] ProductUpsertDto dto, CancellationToken ct)
+        public async Task<ActionResult<ProductDto>> Create([FromForm] ProductUpsertDto dto, CancellationToken ct)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            // Validate that SKU is provided (required regardless of photo)
+            if (string.IsNullOrWhiteSpace(dto.Sku))
+            {
+                return BadRequest("SKU is required.");
+            }
+
+            var hasPhoto = dto.PhotoFile != null || !string.IsNullOrWhiteSpace(dto.PhotoUrl);
 
             var exists = await _repo.SkuExistsAsync(dto.Sku, null, ct);
             if (exists) return Conflict($"SKU '{dto.Sku}' already exists.");
@@ -85,17 +93,60 @@ namespace Grocery.Api.Controllers
             p.Apply(dto);
 
             var created = await _repo.CreateAsync(p, ct);
+
+            // Save photo if provided
+            if (hasPhoto && !string.IsNullOrWhiteSpace(created.Sku))
+            {
+                try
+                {
+                    await _photoService.SavePhotoAsync(created.Sku, dto.PhotoFile, dto.PhotoUrl, ct);
+                }
+                catch (ArgumentException ex)
+                {
+                    // Photo validation failed (invalid format, size, URL format, etc.)
+                    return BadRequest($"Photo upload failed: {ex.Message}");
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Network/download errors (timeout, connection failure, HTTP errors)
+                    return BadRequest($"Photo download failed: {ex.Message}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // File I/O errors, directory issues, or other operational errors
+                    return StatusCode(500, $"Product created but photo save failed: {ex.Message}");
+                }
+                catch (IOException ex)
+                {
+                    // File system I/O errors
+                    return StatusCode(500, $"Product created but photo save failed due to I/O error: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // Unexpected errors
+                    return StatusCode(500, $"Product created but photo save failed: {ex.Message}");
+                }
+            }
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.ToDto());
         }
 
         // PUT /api/products/{id}
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<ProductDto>> Update(Guid id, [FromBody] ProductUpsertDto dto, CancellationToken ct)
+        public async Task<ActionResult<ProductDto>> Update(Guid id, [FromForm] ProductUpsertDto dto, CancellationToken ct)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
             var existing = await _repo.GetByIdAsync(id, ct);
             if (existing is null) return NotFound();
+
+            // Validate that SKU is provided (required regardless of photo)
+            if (string.IsNullOrWhiteSpace(dto.Sku))
+            {
+                return BadRequest("SKU is required.");
+            }
+
+            var hasPhoto = dto.PhotoFile != null || !string.IsNullOrWhiteSpace(dto.PhotoUrl);
 
             var exists = await _repo.SkuExistsAsync(dto.Sku, id, ct);
             if (exists) return Conflict($"SKU '{dto.Sku}' already exists.");
@@ -105,6 +156,41 @@ namespace Grocery.Api.Controllers
 
             var ok = await _repo.UpdateAsync(existing, ct);
             if (!ok) return NotFound();
+
+            // Save photo if provided
+            if (hasPhoto && !string.IsNullOrWhiteSpace(existing.Sku))
+            {
+                try
+                {
+                    await _photoService.SavePhotoAsync(existing.Sku, dto.PhotoFile, dto.PhotoUrl, ct);
+                }
+                catch (ArgumentException ex)
+                {
+                    // Photo validation failed (invalid format, size, URL format, etc.)
+                    return BadRequest($"Photo upload failed: {ex.Message}");
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Network/download errors (timeout, connection failure, HTTP errors)
+                    return BadRequest($"Photo download failed: {ex.Message}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // File I/O errors, directory issues, or other operational errors
+                    return StatusCode(500, $"Product updated but photo save failed: {ex.Message}");
+                }
+                catch (IOException ex)
+                {
+                    // File system I/O errors
+                    return StatusCode(500, $"Product updated but photo save failed due to I/O error: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    // Unexpected errors
+                    return StatusCode(500, $"Product updated but photo save failed: {ex.Message}");
+                }
+            }
+
             return Ok(existing.ToDto());
         }
 
@@ -116,7 +202,29 @@ namespace Grocery.Api.Controllers
             return ok ? NoContent() : NotFound();
         }
 
-        [HttpGet("photo-by-sku/{sku}")]
+        // GET /api/products/photo/{sku}
+        [HttpGet("photo/{sku}")]
+        public async Task<IActionResult> GetPhoto([FromRoute] string sku, CancellationToken ct)
+        {
+            // Validate SKU parameter
+            if (string.IsNullOrWhiteSpace(sku))
+                return BadRequest("SKU is required.");
+
+            // Check if SKU exists
+            var product = await _repo.GetBySkuAsync(sku, ct);
+            if (product is null)
+                return NotFound($"Product with SKU '{sku}' not found.");
+
+            // Get photo from service
+            var photoResult = await _photoService.GetPhotoAsync(sku, ct);
+            if (photoResult is null)
+                return NotFound($"No photo found for SKU '{sku}'.");
+
+            // Return FileResult
+            return photoResult;
+        }
+
+        [HttpGet("Web-photo-by-sku/{sku}")]
         public async Task<IActionResult> PhotoBySku(
         [FromRoute] string sku,
         [FromServices] DuckDuckGoImageService ddg,
@@ -199,5 +307,6 @@ namespace Grocery.Api.Controllers
 
             return prices.Average();
         }
+
     }
 }

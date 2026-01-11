@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Grocery.Api/Dockerfile
+    container_name: grocery-api
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Default=${DATABASE_CONNECTION_STRING}
+      - ServiceBus__ConnectionString=${SERVICEBUS_CONNECTION_STRING_API}
+      - ServiceBus__QueueName=thumbnail-request-queue
+      - Cors__AllowedOrigins__0=http://localhost:80
+      - Cors__AllowedOrigins__1=http://localhost:5173
+      - Cors__AllowedOrigins__2=http://localhost:5174
+    volumes:
+      - api_uploads:/app/uploads
+    networks:
+      - grocery-network
+
+  thumbnail-service:
+    build:
+      context: .
+      dockerfile: Grocery.ThumbnailService/Dockerfile
+    container_name: grocery-thumbnail-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ServiceBus__ConnectionString=${SERVICEBUS_CONNECTION_STRING_THUMBNAIL}
+      - ServiceBus__QueueName=thumbnail-request-queue
+      - PhotosFolder=/app/uploads/photos
+    volumes:
+      - api_uploads:/app/uploads
+    networks:
+      - grocery-network
+
+  web:
+    build:
+      context: ./grocery-web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: grocery-web
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - grocery-network
+
+volumes:
+  api_uploads:
+
+networks:
+  grocery-network:
+    driver: bridge
+

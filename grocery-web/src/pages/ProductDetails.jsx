@@ -1,9 +1,11 @@
 // src/pages/ProductDetails.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { getProductById, updateProduct, deleteProduct } from '../api/products';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getProductById, updateProduct, deleteProduct, comparePrices, searchImageBySku } from '../api/products';
 
 export default function ProductDetails() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -20,9 +22,17 @@ export default function ProductDetails() {
     sku: '',
   });
 
+  const [photoMode, setPhotoMode] = useState('url'); // 'url' or 'file'
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [photoFile, setPhotoFile] = useState(null);
+  const [loadingCompare, setLoadingCompare] = useState(false);
+  const [loadingImageSearch, setLoadingImageSearch] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
   useEffect(() => {
     (async () => {
-      setLoading(true); setError(null);
+      setLoading(true);
+      setError(null);
       try {
         const p = await getProductById(id);
         setProduct(p);
@@ -40,69 +50,153 @@ export default function ProductDetails() {
     })();
   }, [id]);
 
-async function handleSave(e) {
-  e.preventDefault();
-  if (!form.name.trim()) { alert('Name is required'); return; }
-  const priceNum = Number(form.price);
-  if (Number.isNaN(priceNum) || priceNum < 0) { alert('Price must be >= 0'); return; }
+  async function handleFillAutomatically() {
+    if (!form.sku?.trim()) {
+      alert(t('productDetails.skuRequiredForAutoFill'));
+      return;
+    }
 
-  // ✅ confirmation popup
-  const ok = confirm(`Save changes to "${product?.name || form.name}"?`);
-  if (!ok) return;
-
-  try {
-    setSaving(true);
-    await updateProduct(id, {
-      name: form.name.trim(),
-      description: form.description?.trim() || null,
-      price: priceNum,
-      sku: form.sku?.trim() || null,
-    });
-    alert('Product updated.');
-    navigate('/'); // back to list
-  } catch (e) {
-    alert(e.message); // shows 400/409 text from server if any
-  } finally {
-    setSaving(false);
+    try {
+      setLoadingCompare(true);
+      const result = await comparePrices('Hifa', form.sku, 100);
+      
+      // Map API response to form fields
+      if (result.productName) {
+        setForm(f => ({ ...f, name: result.productName }));
+      }
+      if (result.description) {
+        setForm(f => ({ ...f, description: result.description }));
+      }
+      if (result.averagePrice && result.averagePrice !== 'N/A') {
+        const priceNum = parseFloat(result.averagePrice);
+        if (!Number.isNaN(priceNum)) {
+          setForm(f => ({ ...f, price: String(priceNum) }));
+        }
+      }
+    } catch (e) {
+      alert(t('productDetails.failedToFetch', { error: e.message }));
+    } finally {
+      setLoadingCompare(false);
+    }
   }
-}
 
-async function handleDelete() {
-  if (!confirm(`Delete "${product?.name}"? This cannot be undone.`)) return;
-  try {
-    setDeleting(true);
-    await deleteProduct(id);
-    alert('Product deleted.');
-    navigate('/');
-  } catch (e) {
-    alert(e.message);
-  } finally {
-    setDeleting(false);
+  async function handleSearchImageFromWeb() {
+    if (!form.sku?.trim()) {
+      alert(t('productDetails.skuRequiredForImage'));
+      return;
+    }
+
+    try {
+      setLoadingImageSearch(true);
+      
+      // Clean up previous preview if exists
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview(null);
+      }
+
+      const { blob, contentType } = await searchImageBySku(form.sku);
+      
+      // Create object URL for preview
+      const objectUrl = URL.createObjectURL(blob);
+      setImagePreview(objectUrl);
+      
+      // Convert blob to File object
+      const fileExtension = contentType.split('/')[1] || 'jpg';
+      const filename = `image-${form.sku}.${fileExtension}`;
+      const file = new File([blob], filename, { type: contentType });
+      
+      // Set file and switch to file mode
+      setPhotoFile(file);
+      setPhotoMode('file');
+      setPhotoUrl(''); // Clear URL if it was set
+    } catch (e) {
+      alert(t('productDetails.failedToSearchImage', { error: e.message }));
+    } finally {
+      setLoadingImageSearch(false);
+    }
   }
-}
 
-  if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
+  // Cleanup object URLs on unmount or when image changes
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  async function handleSave(e) {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      alert(t('productDetails.nameRequired'));
+      return;
+    }
+    const priceNum = Number(form.price);
+    if (Number.isNaN(priceNum) || priceNum < 0) {
+      alert(t('productDetails.priceInvalid'));
+      return;
+    }
+
+    // ✅ confirmation popup
+    const ok = confirm(t('productDetails.saveChangesConfirm', { name: product?.name || form.name }));
+    if (!ok) return;
+
+    try {
+      setSaving(true);
+      await updateProduct(id, {
+        name: form.name.trim(),
+        description: form.description?.trim() || null,
+        price: priceNum,
+        sku: form.sku?.trim() || null,
+        photoFile: photoFile,
+        photoUrl: photoUrl?.trim() || null,
+      });
+      alert(t('productDetails.productUpdated'));
+      navigate('/'); // back to list
+    } catch (e) {
+      alert(e.message); // shows 400/409 text from server if any
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm(t('productDetails.deleteConfirm', { name: product?.name }))) return;
+    try {
+      setDeleting(true);
+      await deleteProduct(id);
+      alert(t('productDetails.productDeleted'));
+      navigate('/');
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  if (loading) return <div style={{ padding: 16 }}>{t('common.loading')}</div>;
   if (error)   return <div style={{ padding: 16, color: 'red' }}>{error}</div>;
-  if (!product) return <div style={{ padding: 16 }}>Not found.</div>;
+  if (!product) return <div style={{ padding: 16 }}>{t('common.notFound')}</div>;
 
   return (
     <div style={{ maxWidth: 700, margin: '0 auto', padding: 16 }}>
-      <h2>Update Product</h2>
+      <h2>{t('productDetails.updateProduct')}</h2>
 
       <div style={{ marginBottom: 16 }}>
-        <Link to="/">← Back to list</Link>
+        <Link to="/">{t('productDetails.backToList')}</Link>
       </div>
 
       {/* Simple read-only summary */}
       <div style={{ marginBottom: 16, opacity: 0.9 }}>
-        <b>Current:</b> {product.name} | SKU: {product.sku ?? '-'} | Price: {product.price?.toFixed?.(2)}
+        <b>{t('common.current')}:</b> {product.name} | {t('common.sku')}: {product.sku ?? '-'} | {t('common.price')}: {product.price?.toFixed?.(2)}
       </div>
 
       {/* Update form */}
       <form onSubmit={handleSave} style={{ textAlign: 'left' }}>
         <div style={{ marginBottom: 12 }}>
           <label>
-            <div style={{ marginBottom: 4 }}>Name *</div>
+            <div style={{ marginBottom: 4 }}>{t('createPage.nameLabel')}</div>
             <input
               value={form.name}
               onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
@@ -114,7 +208,7 @@ async function handleDelete() {
 
         <div style={{ marginBottom: 12 }}>
           <label>
-            <div style={{ marginBottom: 4 }}>Description</div>
+            <div style={{ marginBottom: 4 }}>{t('createPage.descriptionLabel')}</div>
             <textarea
               value={form.description}
               onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
@@ -126,7 +220,7 @@ async function handleDelete() {
 
         <div style={{ marginBottom: 12 }}>
           <label>
-            <div style={{ marginBottom: 4 }}>Price *</div>
+            <div style={{ marginBottom: 4 }}>{t('createPage.priceLabel')}</div>
             <input
               type="number"
               min="0"
@@ -141,20 +235,108 @@ async function handleDelete() {
 
         <div style={{ marginBottom: 12 }}>
           <label>
-            <div style={{ marginBottom: 4 }}>SKU</div>
+            <div style={{ marginBottom: 4 }}>{t('createPage.skuLabel')}</div>
             <input
               value={form.sku}
               onChange={(e) => setForm(f => ({ ...f, sku: e.target.value }))}
-              placeholder="Optional, must be unique"
+              placeholder={t('createPage.skuPlaceholder')}
+              disabled
               style={{ width: '100%' }}
             />
           </label>
         </div>
 
+        <div style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={handleFillAutomatically}
+            disabled={!form.sku?.trim() || loadingCompare}
+            style={{ marginBottom: 12 }}
+          >
+            {loadingCompare ? t('common.loading') : t('createPage.fillAutomatically')}
+          </button>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <label>
+            <div style={{ marginBottom: 4 }}>{t('createPage.photoUploadMode')}</div>
+            <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <input
+                  type="radio"
+                  value="url"
+                  checked={photoMode === 'url'}
+                  onChange={(e) => setPhotoMode(e.target.value)}
+                />
+                {t('createPage.url')}
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <input
+                  type="radio"
+                  value="file"
+                  checked={photoMode === 'file'}
+                  onChange={(e) => setPhotoMode(e.target.value)}
+                />
+                {t('createPage.fileUpload')}
+              </label>
+            </div>
+          </label>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={handleSearchImageFromWeb}
+            disabled={!form.sku?.trim() || loadingImageSearch}
+            style={{ marginBottom: 12 }}
+          >
+            {loadingImageSearch ? t('createPage.searching') : t('createPage.searchImageFromWeb')}
+          </button>
+          {imagePreview && (
+            <div style={{ marginTop: 8, marginBottom: 8 }}>
+              <div style={{ marginBottom: 4, fontSize: '0.9em', fontWeight: 'bold' }}>{t('createPage.imagePreview')}</div>
+              <img
+                src={imagePreview}
+                alt="Product preview"
+                style={{ maxWidth: '300px', maxHeight: '300px', border: '1px solid #ccc', borderRadius: '4px' }}
+              />
+            </div>
+          )}
+        </div>
+
+        {photoMode === 'url' ? (
+          <div style={{ marginBottom: 12 }}>
+            <label>
+              <div style={{ marginBottom: 4 }}>{t('createPage.photoUrl')}</div>
+              <input
+                type="url"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                placeholder={t('createPage.photoUrlPlaceholder')}
+                style={{ width: '100%' }}
+              />
+            </label>
+          </div>
+        ) : (
+          <div style={{ marginBottom: 12 }}>
+            <label>
+              <div style={{ marginBottom: 4 }}>{t('createPage.photoFile')}</div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                style={{ width: '100%' }}
+              />
+            </label>
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: 8 }}>
-          <button type="submit">Save</button>
-          <button type="button" onClick={handleDelete}>Delete</button>
-          <button type="button" onClick={() => navigate('/')}>Cancel</button>
+          <button type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
+          <button type="button" onClick={handleDelete} disabled={deleting}>
+            {deleting ? t('common.deleting') : t('common.delete')}
+          </button>
+          <button type="button" onClick={() => navigate('/')}>{t('common.cancel')}</button>
         </div>
       </form>
     </div>

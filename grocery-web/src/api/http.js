@@ -2,8 +2,11 @@ const BASE = import.meta.env.VITE_API_BASE_URL;
 
 export async function http(path, options = {}) {
   const hasBody = options && 'body' in options && options.body != null;
+  const isFormData = hasBody && options.body instanceof FormData;
+  
   const headers = {
-    ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+    // Only set Content-Type for JSON, not for FormData (browser sets it with boundary)
+    ...(hasBody && !isFormData ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers || {})
   };
 
