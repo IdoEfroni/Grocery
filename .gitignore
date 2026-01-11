@@ -7,5 +7,7 @@ obj/
 # Configuration files with secrets
 **/appsettings.json
 **/appsettings.*.json
+# But allow example files
+!**/appsettings.Example.json
 .env
 .env.local
