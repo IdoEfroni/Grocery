@@ -29,9 +29,10 @@
 
   <!-- Ensure environment-specific appsettings are copied to publish output (e.g. in Docker). -->
   <ItemGroup>
-    <None Update="appsettings.*.json">
+    <Content Update="appsettings.*.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
