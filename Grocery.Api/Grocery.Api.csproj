@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -25,6 +25,13 @@
 
   <ItemGroup>
     <Folder Include="BL\" />
+  </ItemGroup>
+
+  <!-- Ensure environment-specific appsettings are copied to publish output (e.g. in Docker). -->
+  <ItemGroup>
+    <None Update="appsettings.*.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

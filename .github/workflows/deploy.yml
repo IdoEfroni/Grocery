@@ -45,7 +45,6 @@ jobs:
       - name: Deploy to Container App
         uses: azure/container-apps-deploy-action@v2
         with:
-          # Fixed the missing brace below:
           imageToDeploy: groceryregistryef.azurecr.io/${{ matrix.service }}:latest
           containerAppName: ${{ matrix.service }}
           resourceGroup: rg-grocery-dev
