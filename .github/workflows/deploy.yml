@@ -3,14 +3,13 @@ name: Build and Deploy to Azure Container Apps
 on:
   push:
     branches:
-      - main  # Triggered when merging to master
+      - main  # Matches your current branch name
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # This replaces your 3 separate scripts
         include:
           - service: grocery-api
             dockerfile: Grocery.Api/Dockerfile
@@ -46,6 +45,7 @@ jobs:
       - name: Deploy to Container App
         uses: azure/container-apps-deploy-action@v2
         with:
-          imageToDeploy: groceryregistryef.azurecr.io/${{ matrix.service :latest
+          # Fixed the missing brace below:
+          imageToDeploy: groceryregistryef.azurecr.io/${{ matrix.service }}:latest
           containerAppName: ${{ matrix.service }}
           resourceGroup: rg-grocery-dev
