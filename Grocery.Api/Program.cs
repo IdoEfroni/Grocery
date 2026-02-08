@@ -20,6 +20,7 @@ builder.Services.AddDbContext<StoreDbContext>(opt => opt.UseSqlServer(connection
     sqlServerOptions.EnableRetryOnFailure()));
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddHttpClient<DuckDuckGoImageService>();
 builder.Services.AddHttpClient<IPhotoService, PhotoService>();
 builder.Services.AddHttpClient("ChpCompare");

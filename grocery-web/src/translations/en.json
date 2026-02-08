@@ -27,12 +27,34 @@
   },
   "navigation": {
     "browse": "Browse",
-    "create": "Create"
+    "create": "Create",
+    "displayItems": "Display items"
+  },
+  "productViewer": {
+    "productList": "Product List",
+    "sortBy": "Sort by",
+    "sortRelevance": "Relevance",
+    "sortPriceLowHigh": "Low to High",
+    "sortPriceHighLow": "High to Low",
+    "sortNameAZ": "Name A–Z",
+    "sortNameZA": "Name Z–A",
+    "viewProduct": "View {name}",
+    "displaySize": "Display size",
+    "displaySizeLarge": "Large (1 per row)",
+    "displaySizeMedium": "Medium (2 per row)",
+    "displaySizeSmall": "Small (5 per row)"
   },
   "app": {
     "title": "Grocery — Products"
   },
+  "settings": {
+    "pageSettings": "Page Settings",
+    "regionAndLanguage": "Region and Language",
+    "israelHebrew": "Israel (Hebrew)",
+    "unitedStatesEnglish": "United States (English)"
+  },
   "browsePage": {
+    "scanOrEnterBarcode": "Scan or enter barcode to find a product.",
     "searchPlaceholder": "Search name / SKU / description",
     "findBySku": "Find by exact SKU",
     "findBySkuButton": "Find by SKU",
@@ -50,7 +72,20 @@
     "cameraInUse": "Camera is already in use by another application.",
     "requestingCameraPermission": "Requesting camera permission... Please allow access when prompted.",
     "cameraPermissionHelp": "To enable camera access: 1) Check your browser's address bar for a camera icon, 2) Click it and select 'Allow', 3) Or go to your browser settings and enable camera permissions for this site.",
-    "startingCamera": "Starting camera... Please allow camera access when prompted."
+    "startingCamera": "Starting camera... Please allow camera access when prompted.",
+    "chooseOption": "Choose an option",
+    "openCamera": "Open Camera",
+    "uploadImage": "Upload Image",
+    "browseUploadFile": "Browse & Upload File",
+    "privacyProtected": "Your privacy is protected! No data is transmitted or stored.",
+    "allowCameraPermission": "Allow Camera Permission",
+    "allowCameraPermissionHelp": "Don't worry if you forgot to allow camera permission, just follow these steps to allow camera.",
+    "scanOrBrowsePreview": "Scan or browse barcode to preview result here.",
+    "scannedOutput": "Scanned Output",
+    "closePreview": "Close Preview",
+    "tapToUpdate": "Tap to update product",
+    "noBarcodeFound": "No barcode found in image. Try another image.",
+    "useScannedResult": "Use this barcode"
   },
   "createPage": {
     "nameLabel": "Name *",
@@ -80,6 +115,7 @@
   "productDetails": {
     "updateProduct": "Update Product",
     "backToList": "← Back to list",
+    "currentImage": "Current image",
     "saveChangesConfirm": "Save changes to \"{name}\"?",
     "productUpdated": "Product updated.",
     "deleteConfirm": "Delete \"{name}\"? This cannot be undone.",

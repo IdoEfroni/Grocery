@@ -26,13 +26,35 @@
     "noImageAvailable": "אין תמונה זמינה"
   },
   "navigation": {
-    "browse": "עיון",
-    "create": "צור"
+    "browse": "חיפוש מוצר",
+    "create": " צור מוצר",
+    "displayItems": "תצוגת מוצרים"
+  },
+  "productViewer": {
+    "productList": "רשימת מוצרים",
+    "sortBy": "מיין לפי",
+    "sortRelevance": "רלוונטיות",
+    "sortPriceLowHigh": "מחיר נמוך לגבוה",
+    "sortPriceHighLow": "מחיר גבוה לנמוך",
+    "sortNameAZ": "שם א–ת",
+    "sortNameZA": "שם ת–א",
+    "viewProduct": "צפה ב־{name}",
+    "displaySize": "גודל תצוגה",
+    "displaySizeLarge": "גדול (1 בשורה)",
+    "displaySizeMedium": "בינוני (2 בשורה)",
+    "displaySizeSmall": "קטן (5 בשורה)"
   },
   "app": {
     "title": "מכולת — מוצרים"
   },
+  "settings": {
+    "pageSettings": "הגדרות דף",
+    "regionAndLanguage": "אזור ושפה",
+    "israelHebrew": "ישראל (עברית)",
+    "unitedStatesEnglish": "United States (English)"
+  },
   "browsePage": {
+    "scanOrEnterBarcode": "סרוק או הזן ברקוד כדי למצוא מוצר.",
     "searchPlaceholder": "חפש שם / מק\"ט / תיאור",
     "findBySku": "חפש לפי מק\"ט מדויק",
     "findBySkuButton": "חפש לפי מק\"ט",
@@ -50,7 +72,20 @@
     "cameraInUse": "המצלמה כבר בשימוש על ידי יישום אחר.",
     "requestingCameraPermission": "מבקש הרשאת מצלמה... אנא אפשר גישה כאשר תתבקש.",
     "cameraPermissionHelp": "כדי לאפשר גישה למצלמה: 1) בדוק את שורת הכתובת בדפדפן לאייקון מצלמה, 2) לחץ עליו ובחר 'אפשר', 3) או עבור להגדרות הדפדפן ואפשר הרשאות מצלמה לאתר זה.",
-    "startingCamera": "מתחיל מצלמה... אנא אפשר גישה למצלמה כאשר תתבקש."
+    "startingCamera": "מתחיל מצלמה... אנא אפשר גישה למצלמה כאשר תתבקש.",
+    "chooseOption": "בחר אפשרות",
+    "openCamera": "פתח מצלמה",
+    "uploadImage": "העלה תמונה",
+    "browseUploadFile": "עיון והעלאת קובץ",
+    "privacyProtected": "הפרטיות שלך מוגנת! לא מועבר או נשמר מידע.",
+    "allowCameraPermission": "אפשר הרשאת מצלמה",
+    "allowCameraPermissionHelp": "אל תדאג אם שכחת לאפשר מצלמה, עקוב אחר השלבים הבאים כדי לאפשר.",
+    "scanOrBrowsePreview": "סרוק או בחר ברקוד לתצוגה מקדימה כאן.",
+    "scannedOutput": "תוצאת סריקה",
+    "closePreview": "סגור תצוגה מקדימה",
+    "tapToUpdate": "לחץ לעדכון מוצר",
+    "noBarcodeFound": "לא נמצא ברקוד בתמונה. נסה תמונה אחרת.",
+    "useScannedResult": "השתמש בברקוד זה"
   },
   "createPage": {
     "nameLabel": "שם *",
@@ -80,6 +115,7 @@
   "productDetails": {
     "updateProduct": "עדכן מוצר",
     "backToList": "← חזרה לרשימה",
+    "currentImage": "תמונה נוכחית",
     "saveChangesConfirm": "שמור שינויים ב-\"{name}\"?",
     "productUpdated": "המוצר עודכן.",
     "deleteConfirm": "מחק \"{name}\"? פעולה זו לא ניתנת לביטול.",

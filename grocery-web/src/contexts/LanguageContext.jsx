@@ -13,9 +13,9 @@ const STORAGE_KEY = 'grocery-language';
 
 export function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(() => {
-    // Load from localStorage or default to 'en'
+    // Load from localStorage or default to Hebrew
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved && (saved === 'en' || saved === 'he') ? saved : 'en';
+    return saved && (saved === 'en' || saved === 'he') ? saved : 'he';
   });
 
   // Save to localStorage whenever language changes
@@ -78,4 +78,5 @@ export function useLanguage() {
   }
   return context;
 }
+
 

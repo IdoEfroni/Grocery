@@ -1,31 +1,12 @@
-export default function Modal({ children, onClose }) {
-  const modalBackdropStyle = {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(0,0,0,0.4)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    zIndex: 1000,
-  };
+import { Modal as BSModal, Button } from 'react-bootstrap';
 
-  const modalCardStyle = {
-    background: '#222',
-    color: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    maxWidth: 420,
-    width: '100%',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-  };
-
+export default function Modal({ children, onClose, title }) {
   return (
-    <div style={modalBackdropStyle} onClick={onClose}>
-      <div style={modalCardStyle} onClick={(e) => e.stopPropagation()}>
-        {children}
-      </div>
-    </div>
+    <BSModal show onHide={onClose} centered backdrop="static">
+      <BSModal.Header closeButton className="bg-dark text-light border-secondary">
+        {title ? <BSModal.Title>{title}</BSModal.Title> : null}
+      </BSModal.Header>
+      <BSModal.Body className="bg-dark text-light">{children}</BSModal.Body>
+    </BSModal>
   );
 }
-

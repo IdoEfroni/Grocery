@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getProductById, updateProduct, deleteProduct, comparePrices, searchImageBySku } from '../api/products';
+import { getProductById, updateProduct, deleteProduct, comparePrices, searchImageBySku, getPhotoUrl } from '../api/products';
+import { formatPrice } from '../utils/formatPrice';
 
 export default function ProductDetails() {
   const { t } = useLanguage();
@@ -153,7 +154,7 @@ export default function ProductDetails() {
         photoUrl: photoUrl?.trim() || null,
       });
       alert(t('productDetails.productUpdated'));
-      navigate('/'); // back to list
+      navigate('/view'); // back to product list (Display items)
     } catch (e) {
       alert(e.message); // shows 400/409 text from server if any
     } finally {
@@ -167,7 +168,7 @@ export default function ProductDetails() {
       setDeleting(true);
       await deleteProduct(id);
       alert(t('productDetails.productDeleted'));
-      navigate('/');
+      navigate('/view');
     } catch (e) {
       alert(e.message);
     } finally {
@@ -184,13 +185,50 @@ export default function ProductDetails() {
       <h2>{t('productDetails.updateProduct')}</h2>
 
       <div style={{ marginBottom: 16 }}>
-        <Link to="/">{t('productDetails.backToList')}</Link>
+        <Link to="/view">{t('productDetails.backToList')}</Link>
       </div>
 
       {/* Simple read-only summary */}
       <div style={{ marginBottom: 16, opacity: 0.9 }}>
-        <b>{t('common.current')}:</b> {product.name} | {t('common.sku')}: {product.sku ?? '-'} | {t('common.price')}: {product.price?.toFixed?.(2)}
+        <b>{t('common.current')}:</b> {product.name} | {t('common.sku')}: {product.sku ?? '-'} | {t('common.price')}: {formatPrice(product.price)}
       </div>
+
+      {/* Current product image from API (GET photo/{sku}) */}
+      {product.sku && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 8, fontWeight: 600 }}>{t('productDetails.currentImage')}</div>
+          <div style={{ border: '1px solid #ccc', borderRadius: 8, overflow: 'hidden', display: 'inline-block', maxWidth: '100%' }}>
+            <img
+              src={getPhotoUrl(product.sku)}
+              alt={product.name}
+              style={{ maxWidth: 280, maxHeight: 280, objectFit: 'contain', display: 'block' }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                const fallback = e.target.nextElementSibling;
+                if (fallback) {
+                  fallback.style.display = 'flex';
+                }
+              }}
+            />
+            <div
+              className="text-muted"
+              style={{
+                display: 'none',
+                width: 280,
+                height: 200,
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 24,
+                textAlign: 'center',
+              }}
+              aria-hidden="true"
+            >
+              {t('common.noImageAvailable')}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Update form */}
       <form onSubmit={handleSave} style={{ textAlign: 'left' }}>
@@ -336,7 +374,7 @@ export default function ProductDetails() {
           <button type="button" onClick={handleDelete} disabled={deleting}>
             {deleting ? t('common.deleting') : t('common.delete')}
           </button>
-          <button type="button" onClick={() => navigate('/')}>{t('common.cancel')}</button>
+          <button type="button" onClick={() => navigate('/view')}>{t('common.cancel')}</button>
         </div>
       </form>
     </div>

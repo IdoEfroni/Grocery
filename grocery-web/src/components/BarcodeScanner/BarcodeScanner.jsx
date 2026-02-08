@@ -1,21 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useId } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { Modal, Button } from 'react-bootstrap';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function BarcodeScanner({ isOpen, onScan, onClose }) {
+  const instanceId = useId().replace(/:/g, '-');
+  const scannerContainerId = `barcode-scanner-container-${instanceId}`;
   const { t } = useLanguage();
-  const scannerIdRef = useRef(`scanner-${Math.random().toString(36).substring(7)}`);
   const html5QrcodeRef = useRef(null);
+  const [mode, setMode] = useState('choose'); // 'choose' | 'camera' | 'upload'
   const [error, setError] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
-  
-  // Store translation function refs to avoid dependency issues
+  const [uploadResult, setUploadResult] = useState(null); // { decodedText } or { error }
+  const [isUploadScanning, setIsUploadScanning] = useState(false);
+  const fileInputRef = useRef(null);
   const tRef = useRef(t);
+  const onScanRef = useRef(onScan);
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
     tRef.current = t;
   }, [t]);
+  useEffect(() => {
+    onScanRef.current = onScan;
+    onCloseRef.current = onClose;
+  }, [onScan, onClose]);
 
-  // Cleanup function
   const stopScanner = () => {
     if (html5QrcodeRef.current) {
       html5QrcodeRef.current.stop().catch((err) => {
@@ -28,182 +37,296 @@ export default function BarcodeScanner({ isOpen, onScan, onClose }) {
     }
   };
 
+  const stopScannerAsync = () => {
+    const scanner = html5QrcodeRef.current;
+    if (!scanner) return Promise.resolve();
+    html5QrcodeRef.current = null;
+    return Promise.resolve(scanner.stop())
+      .catch((err) => console.error('Error stopping scanner:', err))
+      .then(() => Promise.resolve(scanner.clear()))
+      .catch((err) => console.error('Error clearing scanner:', err));
+  };
+
   useEffect(() => {
     if (!isOpen) {
-      // Clean up scanner when closed
       stopScanner();
       setError(null);
       setIsScanning(false);
+      setMode('choose');
+      setUploadResult(null);
+      setIsUploadScanning(false);
+      return;
+    }
+  }, [isOpen]);
+
+  // Camera mode: start camera when mode === 'camera'
+  useEffect(() => {
+    if (!isOpen || mode !== 'camera') return;
+
+    const element = document.getElementById(scannerContainerId);
+    if (!element) {
+      setError(tRef.current('browsePage.cameraError'));
       return;
     }
 
-    // Initialize scanner when opened
-    if (!html5QrcodeRef.current && !isScanning) {
-      // Wait a bit to ensure DOM is ready, especially on mobile
-      const initTimeout = setTimeout(async () => {
-        // Check if element exists
-        const element = document.getElementById(scannerIdRef.current);
-        if (!element) {
-          console.error('Scanner container element not found');
-          setError(tRef.current('browsePage.cameraError'));
-          return;
-        }
+    let mounted = true;
+    const html5Qrcode = new Html5Qrcode(scannerContainerId);
+    html5QrcodeRef.current = html5Qrcode;
 
-        try {
-          const html5Qrcode = new Html5Qrcode(scannerIdRef.current);
-          html5QrcodeRef.current = html5Qrcode;
+    const cameraConfig = { facingMode: 'environment' };
+    // Barcode-style viewfinder: wider rectangle (like reference site)
+    const config = {
+      fps: 10,
+      qrbox: (viewfinderWidth, viewfinderHeight) => {
+        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+        const height = Math.floor(minEdge * 0.6);
+        const width = Math.floor(Math.min(viewfinderWidth * 0.9, height * 2.2));
+        return { width, height };
+      },
+      aspectRatio: 1.0,
+    };
 
-          // Camera configuration - prefer back camera for barcode scanning
-          // Try environment (back camera) first, fallback to any available camera
-          const cameraConfig = { facingMode: "environment" };
-
-          const config = {
-            fps: 10,
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-              // Responsive qrbox size
-              const minEdgePercentage = 0.7;
-              const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-              const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-              return {
-                width: qrboxSize,
-                height: qrboxSize
-              };
-            },
-            aspectRatio: 1.0,
-          };
-
-          setIsScanning(true);
-          setError(null);
-
-          await html5Qrcode.start(
-            cameraConfig,
-            config,
-            (decodedText, decodedResult) => {
-              // Successfully scanned
-              onScan(decodedText);
-              stopScanner();
-              onClose();
-            },
-            (errorMessage) => {
-              // Scanning error (ignore, scanner will keep trying)
-              // Only show error if it's a permission or access issue
-              if (errorMessage.includes('Permission') || 
-                  errorMessage.includes('NotAllowedError') ||
-                  errorMessage.includes('Permission denied') ||
-                  errorMessage.toLowerCase().includes('permission')) {
-                setError(tRef.current('browsePage.cameraPermissionDenied'));
-                setIsScanning(false);
-              } else if (errorMessage.includes('NotFoundError') || 
-                         errorMessage.includes('DevicesNotFoundError') ||
-                         errorMessage.includes('No camera found')) {
-                setError(tRef.current('browsePage.cameraNotFound'));
-                setIsScanning(false);
-              } else if (errorMessage.includes('NotReadableError') ||
-                         errorMessage.includes('in use')) {
-                setError(tRef.current('browsePage.cameraInUse'));
-                setIsScanning(false);
-              }
-              // Other errors (like "No QR code found") are normal and should be ignored
-            }
-          );
-        } catch (err) {
-          console.error('Error initializing scanner:', err);
-          setIsScanning(false);
-          if (err.message && (
-            err.message.includes('Permission') || 
-            err.message.includes('NotAllowedError')
-          )) {
+    html5Qrcode
+      .start(
+        cameraConfig,
+        config,
+        (decodedText) => {
+          if (!mounted) return;
+          const text = decodedText;
+          stopScannerAsync().then(() => {
+            onScanRef.current?.(text);
+            onCloseRef.current?.();
+          });
+        },
+        (errorMessage) => {
+          if (!mounted) return;
+          if (
+            errorMessage.includes('Permission') ||
+            errorMessage.includes('NotAllowedError') ||
+            errorMessage.toLowerCase().includes('permission')
+          ) {
             setError(tRef.current('browsePage.cameraPermissionDenied'));
-          } else if (err.message && err.message.includes('NotFoundError')) {
+            setIsScanning(false);
+          } else if (
+            errorMessage.includes('NotFoundError') ||
+            errorMessage.includes('DevicesNotFoundError') ||
+            errorMessage.includes('No camera found')
+          ) {
             setError(tRef.current('browsePage.cameraNotFound'));
-          } else {
-            setError(tRef.current('browsePage.cameraError'));
+            setIsScanning(false);
+          } else if (
+            errorMessage.includes('NotReadableError') ||
+            errorMessage.includes('in use')
+          ) {
+            setError(tRef.current('browsePage.cameraInUse'));
+            setIsScanning(false);
           }
         }
-      }, 100); // Small delay to ensure DOM is ready
+      )
+      .then(() => {
+        if (mounted) {
+          setIsScanning(true);
+          setError(null);
+        }
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        console.error('Error initializing scanner:', err);
+        setIsScanning(false);
+        if (
+          err.message &&
+          (err.message.includes('Permission') || err.message.includes('NotAllowedError'))
+        ) {
+          setError(tRef.current('browsePage.cameraPermissionDenied'));
+        } else if (err.message && err.message.includes('NotFoundError')) {
+          setError(tRef.current('browsePage.cameraNotFound'));
+        } else {
+          setError(tRef.current('browsePage.cameraError'));
+        }
+      });
 
-      // Cleanup timeout and scanner on unmount
-      return () => {
-        clearTimeout(initTimeout);
-        stopScanner();
-      };
+    return () => {
+      mounted = false;
+      stopScanner();
+    };
+  }, [isOpen, mode]);
+
+  const handleBackToChoose = () => {
+    stopScanner();
+    setMode('choose');
+    setError(null);
+    setIsScanning(false);
+    setUploadResult(null);
+    setIsUploadScanning(false);
+  };
+
+  const handleOpenCamera = () => {
+    setMode('camera');
+    setError(null);
+    setUploadResult(null);
+  };
+
+  const handleSwitchToUpload = () => {
+    setMode('upload');
+    setError(null);
+    setUploadResult(null);
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadResult(null);
+    setIsUploadScanning(true);
+    try {
+      const html5Qrcode = new Html5Qrcode(scannerContainerId);
+      html5QrcodeRef.current = html5Qrcode;
+      const decodedText = await html5Qrcode.scanFile(file, false);
+      html5Qrcode.clear();
+      html5QrcodeRef.current = null;
+      setUploadResult({ decodedText });
+    } catch (err) {
+      setUploadResult({ error: tRef.current('browsePage.noBarcodeFound') });
+      if (html5QrcodeRef.current) {
+        html5QrcodeRef.current.clear();
+        html5QrcodeRef.current = null;
+      }
+    } finally {
+      setIsUploadScanning(false);
     }
-  }, [isOpen, onScan, onClose, isScanning]);
-
-  if (!isOpen) {
-    return null;
-  }
-
-  const modalBackdropStyle = {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(0,0,0,0.8)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    zIndex: 1000,
   };
 
-  const modalCardStyle = {
-    background: '#222',
-    color: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    maxWidth: '90%',
-    width: '100%',
-    maxHeight: '90vh',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+  const handleUseScannedResult = () => {
+    if (uploadResult?.decodedText) {
+      onScan(uploadResult.decodedText);
+      onClose();
+    }
   };
 
-  const scannerContainerStyle = {
-    width: '100%',
-    minHeight: '300px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+  const handleResetUpload = () => {
+    setUploadResult(null);
+    fileInputRef.current?.click();
   };
+
+  if (!isOpen) return null;
 
   return (
-    <div style={modalBackdropStyle} onClick={onClose}>
-      <div style={modalCardStyle} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ margin: 0 }}>{t('browsePage.scanBarcode')}</h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: '#444',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '8px 16px',
-              cursor: 'pointer',
-            }}
-          >
-            {t('common.close')}
-          </button>
-        </div>
-        {!isScanning && !error && (
-          <div style={{ color: '#ffd93d', marginBottom: 16, padding: 12, background: '#3a3a1f', borderRadius: 4 }}>
-            {t('browsePage.startingCamera')}
-          </div>
-        )}
-        {error && (
-          <div style={{ color: '#ff6b6b', marginBottom: 16, padding: 12, background: '#3a1f1f', borderRadius: 4 }}>
-            <div style={{ marginBottom: 8 }}>{error}</div>
-            <div style={{ fontSize: '0.9em', marginTop: 8 }}>
-              {t('browsePage.cameraPermissionHelp')}
+    <Modal show={isOpen} onHide={onClose} centered size="lg" backdrop="static" className="barcode-scanner-modal">
+      <Modal.Header className="bg-dark text-light border-secondary">
+        <Modal.Title className="d-flex align-items-center">
+          <span className="me-2">📷</span>
+          {t('browsePage.scanBarcode')}
+        </Modal.Title>
+        <Button variant="outline-light" size="sm" aria-label={t('common.close')} onClick={onClose}>
+          ✕
+        </Button>
+      </Modal.Header>
+      <Modal.Body className="bg-dark text-light p-0">
+        {mode === 'choose' && (
+          <div className="p-4">
+            <h6 className="text-muted text-uppercase small mb-3">{t('browsePage.chooseOption')}</h6>
+            <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+              <Button
+                variant="outline-primary"
+                size="lg"
+                className="d-flex align-items-center justify-content-center gap-2"
+                onClick={handleOpenCamera}
+              >
+                <span>📷</span>
+                {t('browsePage.openCamera')}
+              </Button>
+              <Button
+                variant="outline-primary"
+                size="lg"
+                className="d-flex align-items-center justify-content-center gap-2"
+                onClick={handleSwitchToUpload}
+              >
+                <span>🖼️</span>
+                {t('browsePage.uploadImage')}
+              </Button>
             </div>
           </div>
         )}
-        <div style={scannerContainerStyle}>
-          <div id={scannerIdRef.current} style={{ width: '100%', minHeight: '300px' }} />
+
+        {mode === 'camera' && (
+          <div className="p-3">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <Button variant="outline-secondary" size="sm" onClick={handleBackToChoose}>
+                ← {t('browsePage.closePreview')}
+              </Button>
+            </div>
+            {!isScanning && !error && (
+              <div className="alert alert-warning py-2 mb-2" role="status">
+                {t('browsePage.startingCamera')}
+              </div>
+            )}
+            {error && (
+              <div className="alert alert-danger py-2 mb-2">
+                <div>{error}</div>
+                <small className="d-block mt-1">{t('browsePage.cameraPermissionHelp')}</small>
+              </div>
+            )}
+            <div className="rounded overflow-hidden bg-black position-relative" style={{ minHeight: 280 }}>
+              <div id={scannerContainerId} style={{ width: '100%', minHeight: 280 }} />
+            </div>
+          </div>
+        )}
+
+        {mode === 'upload' && (
+          <div className="p-4">
+            {/* Hidden container for file scan (html5-qrcode needs a target element) */}
+            <div id={scannerContainerId} className="position-absolute" style={{ left: -9999, width: 1, height: 1 }} aria-hidden="true" />
+            <Button variant="outline-secondary" size="sm" className="mb-3" onClick={handleBackToChoose}>
+              ← {t('browsePage.closePreview')}
+            </Button>
+            <div className="border border-secondary rounded p-4 text-center mb-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="d-none"
+                onChange={handleFileChange}
+              />
+              <Button
+                variant="primary"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadScanning}
+              >
+                {isUploadScanning ? t('browsePage.scanning') : t('browsePage.browseUploadFile')}
+              </Button>
+            </div>
+            {uploadResult?.decodedText && (
+              <div className="mb-3">
+                <h6 className="text-muted small">{t('browsePage.scannedOutput')}</h6>
+                <p className="mb-2 fs-5">{uploadResult.decodedText}</p>
+                <div className="d-flex gap-2">
+                  <Button variant="success" onClick={handleUseScannedResult}>
+                    {t('browsePage.useScannedResult')}
+                  </Button>
+                  <Button variant="outline-secondary" onClick={handleResetUpload}>
+                    {t('common.reset')}
+                  </Button>
+                </div>
+              </div>
+            )}
+            {uploadResult?.error && (
+              <div className="alert alert-warning">
+                {uploadResult.error}
+                <Button variant="outline-warning" size="sm" className="mt-2" onClick={handleResetUpload}>
+                  {t('browsePage.browseUploadFile')}
+                </Button>
+              </div>
+            )}
+            {!uploadResult && !isUploadScanning && (
+              <p className="text-muted small mb-0">{t('browsePage.scanOrBrowsePreview')}</p>
+            )}
+          </div>
+        )}
+
+        <div className="p-3 bg-secondary bg-opacity-25 small text-muted text-center">
+          *{t('browsePage.privacyProtected')}
         </div>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 }
-
