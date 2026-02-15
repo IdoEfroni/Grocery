@@ -97,6 +97,7 @@
     "photoUploadMode": "מצב העלאת תמונה",
     "url": "כתובת URL",
     "fileUpload": "העלאת קובץ",
+    "camera": "מצלמה",
     "photoUrl": "כתובת תמונה",
     "photoUrlPlaceholder": "https://example.com/image.jpg",
     "photoFile": "קובץ תמונה",
@@ -104,13 +105,19 @@
     "searchImageFromWeb": "חפש תמונה מהאינטרנט",
     "searching": "מחפש...",
     "imagePreview": "תצוגה מקדימה של תמונה:",
+    "cameraCapture": "צילום ממצלמה",
     "skuRequiredForAutoFill": "מק\"ט נדרש למילוי אוטומטי של שדות",
     "skuRequiredForImage": "מק\"ט נדרש לחיפוש תמונה",
     "nameRequired": "שם נדרש",
     "priceInvalid": "מחיר חייב להיות מספר >= 0",
     "createdSuccessfully": "נוצר \"{name}\" בהצלחה.",
     "failedToFetch": "נכשל בטעינת נתוני המוצר: {error}",
-    "failedToSearchImage": "נכשל בחיפוש תמונה: {error}"
+    "failedToSearchImage": "נכשל בחיפוש תמונה: {error}",
+    "openCamera": "פתח מצלמה",
+    "capturePhoto": "צלם תמונה",
+    "stopCamera": "עצור מצלמה",
+    "startingCamera": "מפעיל מצלמה...",
+    "cameraCaptureTitle": "צילום תמונת מוצר"
   },
   "productDetails": {
     "updateProduct": "עדכן מוצר",

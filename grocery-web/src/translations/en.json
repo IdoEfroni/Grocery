@@ -97,6 +97,7 @@
     "photoUploadMode": "Photo Upload Mode",
     "url": "URL",
     "fileUpload": "File Upload",
+    "camera": "Camera",
     "photoUrl": "Photo URL",
     "photoUrlPlaceholder": "https://example.com/image.jpg",
     "photoFile": "Photo File",
@@ -104,13 +105,19 @@
     "searchImageFromWeb": "Search Image from Web",
     "searching": "Searching...",
     "imagePreview": "Image Preview:",
+    "cameraCapture": "Camera capture",
     "skuRequiredForAutoFill": "SKU is required to fill fields automatically",
     "skuRequiredForImage": "SKU is required to search for image",
     "nameRequired": "Name is required",
     "priceInvalid": "Price must be a number >= 0",
     "createdSuccessfully": "Created \"{name}\" successfully.",
     "failedToFetch": "Failed to fetch product data: {error}",
-    "failedToSearchImage": "Failed to search image: {error}"
+    "failedToSearchImage": "Failed to search image: {error}",
+    "openCamera": "Open Camera",
+    "capturePhoto": "Capture Photo",
+    "stopCamera": "Stop Camera",
+    "startingCamera": "Starting camera...",
+    "cameraCaptureTitle": "Capture product photo"
   },
   "productDetails": {
     "updateProduct": "Update Product",

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { createProduct, comparePrices, searchImageBySku } from '../../api/products';
 import { Form, Button, Card } from 'react-bootstrap';
+import CameraCapture from '../../components/CameraCapture/CameraCapture';
 
 export default function CreatePage() {
   const { t } = useLanguage();
@@ -16,12 +17,13 @@ export default function CreatePage() {
     sku: prefillSku,
   });
 
-  const [photoMode, setPhotoMode] = useState('url');
+  const [photoMode, setPhotoMode] = useState('url'); // 'url' | 'file' | 'camera'
   const [photoUrl, setPhotoUrl] = useState('');
   const [photoFile, setPhotoFile] = useState(null);
   const [loadingCompare, setLoadingCompare] = useState(false);
   const [loadingImageSearch, setLoadingImageSearch] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
 
   async function handleFillAutomatically() {
     if (!newProduct.sku?.trim()) {
@@ -194,6 +196,16 @@ export default function CreatePage() {
                 checked={photoMode === 'file'}
                 onChange={() => setPhotoMode('file')}
               />
+              <Form.Check
+                type="radio"
+                id="photo-camera"
+                name="photoMode"
+                label={t('createPage.camera')}
+                checked={photoMode === 'camera'}
+                onChange={() => {
+                  setPhotoMode('camera');
+                }}
+              />
             </div>
           </Form.Group>
 
@@ -206,20 +218,9 @@ export default function CreatePage() {
             >
               {loadingImageSearch ? t('createPage.searching') : t('createPage.searchImageFromWeb')}
             </Button>
-            {imagePreview && (
-              <div className="mt-2">
-                <Form.Label className="small fw-bold">{t('createPage.imagePreview')}</Form.Label>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="img-thumbnail d-block"
-                  style={{ maxWidth: 300, maxHeight: 300, objectFit: 'contain' }}
-                />
-              </div>
-            )}
           </div>
 
-          {photoMode === 'url' ? (
+          {photoMode === 'url' && (
             <Form.Group className="mb-3">
               <Form.Label>{t('createPage.photoUrl')}</Form.Label>
               <Form.Control
@@ -229,7 +230,9 @@ export default function CreatePage() {
                 placeholder={t('createPage.photoUrlPlaceholder')}
               />
             </Form.Group>
-          ) : (
+          )}
+
+          {photoMode === 'file' && (
             <Form.Group className="mb-3">
               <Form.Label>{t('createPage.photoFile')}</Form.Label>
               <Form.Control
@@ -238,6 +241,33 @@ export default function CreatePage() {
                 onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
               />
             </Form.Group>
+          )}
+
+          {photoMode === 'camera' && (
+            <Form.Group className="mb-3">
+              <Form.Label>{t('createPage.cameraCapture')}</Form.Label>
+              <div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={() => setShowCamera(true)}
+                >
+                  {t('createPage.capturePhoto')}
+                </Button>
+              </div>
+            </Form.Group>
+          )}
+
+          {imagePreview && (
+            <div className="mb-3">
+              <Form.Label className="small fw-bold">{t('createPage.imagePreview')}</Form.Label>
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="img-thumbnail d-block"
+                style={{ maxWidth: '100%', width: '100%', maxHeight: 320, objectFit: 'contain' }}
+              />
+            </div>
           )}
 
           <div className="d-flex gap-2">
@@ -249,6 +279,18 @@ export default function CreatePage() {
             </Button>
           </div>
         </Form>
+        <CameraCapture
+          isOpen={showCamera}
+          onClose={() => setShowCamera(false)}
+          onCapture={(file, objectUrl) => {
+            if (imagePreview) {
+              URL.revokeObjectURL(imagePreview);
+            }
+            setPhotoFile(file);
+            setPhotoUrl('');
+            setImagePreview(objectUrl);
+          }}
+        />
       </Card.Body>
     </Card>
   );

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getProductById, updateProduct, deleteProduct, comparePrices, searchImageBySku, getPhotoUrl } from '../api/products';
+import CameraCapture from '../components/CameraCapture/CameraCapture';
 import { formatPrice } from '../utils/formatPrice';
 
 export default function ProductDetails() {
@@ -23,12 +24,13 @@ export default function ProductDetails() {
     sku: '',
   });
 
-  const [photoMode, setPhotoMode] = useState('url'); // 'url' or 'file'
+  const [photoMode, setPhotoMode] = useState('url'); // 'url' | 'file' | 'camera'
   const [photoUrl, setPhotoUrl] = useState('');
   const [photoFile, setPhotoFile] = useState(null);
   const [loadingCompare, setLoadingCompare] = useState(false);
   const [loadingImageSearch, setLoadingImageSearch] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -317,6 +319,15 @@ export default function ProductDetails() {
                 />
                 {t('createPage.fileUpload')}
               </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <input
+                  type="radio"
+                  value="camera"
+                  checked={photoMode === 'camera'}
+                  onChange={(e) => setPhotoMode(e.target.value)}
+                />
+                {t('createPage.camera')}
+              </label>
             </div>
           </label>
         </div>
@@ -330,19 +341,9 @@ export default function ProductDetails() {
           >
             {loadingImageSearch ? t('createPage.searching') : t('createPage.searchImageFromWeb')}
           </button>
-          {imagePreview && (
-            <div style={{ marginTop: 8, marginBottom: 8 }}>
-              <div style={{ marginBottom: 4, fontSize: '0.9em', fontWeight: 'bold' }}>{t('createPage.imagePreview')}</div>
-              <img
-                src={imagePreview}
-                alt="Product preview"
-                style={{ maxWidth: '300px', maxHeight: '300px', border: '1px solid #ccc', borderRadius: '4px' }}
-              />
-            </div>
-          )}
         </div>
 
-        {photoMode === 'url' ? (
+        {photoMode === 'url' && (
           <div style={{ marginBottom: 12 }}>
             <label>
               <div style={{ marginBottom: 4 }}>{t('createPage.photoUrl')}</div>
@@ -355,7 +356,9 @@ export default function ProductDetails() {
               />
             </label>
           </div>
-        ) : (
+        )}
+
+        {photoMode === 'file' && (
           <div style={{ marginBottom: 12 }}>
             <label>
               <div style={{ marginBottom: 4 }}>{t('createPage.photoFile')}</div>
@@ -369,6 +372,31 @@ export default function ProductDetails() {
           </div>
         )}
 
+        {photoMode === 'camera' && (
+          <div style={{ marginBottom: 12 }}>
+            <label>
+              <div style={{ marginBottom: 4 }}>{t('createPage.cameraCapture')}</div>
+              <button
+                type="button"
+                onClick={() => setShowCamera(true)}
+              >
+                {t('createPage.capturePhoto')}
+              </button>
+            </label>
+          </div>
+        )}
+
+        {imagePreview && (
+          <div style={{ marginTop: 8, marginBottom: 8 }}>
+            <div style={{ marginBottom: 4, fontSize: '0.9em', fontWeight: 'bold' }}>{t('createPage.imagePreview')}</div>
+            <img
+              src={imagePreview}
+              alt="Product preview"
+              style={{ maxWidth: '100%', width: '100%', maxHeight: '320px', border: '1px solid #ccc', borderRadius: '4px', objectFit: 'contain' }}
+            />
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
           <button type="button" onClick={handleDelete} disabled={deleting}>
@@ -377,6 +405,18 @@ export default function ProductDetails() {
           <button type="button" onClick={() => navigate('/view')}>{t('common.cancel')}</button>
         </div>
       </form>
+      <CameraCapture
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={(file, objectUrl) => {
+          if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+          }
+          setPhotoFile(file);
+          setPhotoUrl('');
+          setImagePreview(objectUrl);
+        }}
+      />
     </div>
   );
 }
