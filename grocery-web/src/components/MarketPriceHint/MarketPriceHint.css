@@ -1,0 +1,39 @@
+.market-hint {
+  text-align: start;
+}
+
+.market-hint--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-secondary-color, #6c757d);
+  padding: 1rem 0;
+}
+
+.market-hint__label {
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.25rem;
+  opacity: 0.85;
+}
+
+/* Deliberately far smaller than .price-card__price (which is up to 5rem).
+   A real store price and an external guess must never look interchangeable. */
+.market-hint__value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 0.25rem;
+}
+
+.market-hint__product {
+  font-size: 0.9375rem;
+  margin: 0 0 0.5rem;
+}
+
+.market-hint__warning {
+  font-size: 0.9375rem;
+  margin: 0;
+  line-height: 1.4;
+}

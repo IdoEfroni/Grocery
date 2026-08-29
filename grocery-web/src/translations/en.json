@@ -94,7 +94,10 @@
     "switchCamera": "Switch camera",
     "pointAtBarcode": "Hold the barcode inside the frame, about 20 cm away.",
     "takePhotoInstead": "Take a photo instead",
-    "orEnterManually": "or enter the barcode manually"
+    "orEnterManually": "or enter the barcode manually",
+    "scanForPrice": "Scan for a price",
+    "noBarcodeQuestion": "No barcode on the item?",
+    "searchByName": "Search by name"
   },
   "createPage": {
     "nameLabel": "Name *",
@@ -153,5 +156,19 @@
     "failedToFetch": "Failed to fetch product data: {error}",
     "failedToSearchImage": "Failed to search image: {error}",
     "deleteConfirmMessage": "Delete \"{name}\"?"
+  },
+  "lookup": {
+    "priceIs": "Price {price}",
+    "scanNext": "Scan next item",
+    "editProduct": "Edit product",
+    "notInSystem": "This item is not in the system",
+    "addToSystem": "Add it to the system",
+    "backToSearch": "Back to search",
+    "checkingMarketPrice": "Checking an external price reference…",
+    "noMarketPrice": "No external price reference was found for this barcode.",
+    "marketAverageLabel": "External market average",
+    "notStorePrice": "This is NOT the store price.",
+    "confirmBeforeQuoting": "Confirm with a manager before quoting it to a customer.",
+    "backToPrice": "Back to the price"
   }
 }

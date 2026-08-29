@@ -21,6 +21,18 @@
   line-height: 1;
 }
 
+.browse-page__lede {
+  text-align: center;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 1.5rem;
+}
+
+.browse-page__alt {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
 .browse-page__divider {
   display: flex;
   align-items: center;

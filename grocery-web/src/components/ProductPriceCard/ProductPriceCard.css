@@ -1,0 +1,89 @@
+.price-card {
+  max-width: 32rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.price-card__photo {
+  width: 100%;
+  max-width: 15rem;
+  aspect-ratio: 1;
+  margin: 0 auto 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+.price-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Collapse the frame entirely when there is no photo, rather than leaving an
+   empty grey square above the price. */
+.price-card__photo.is-empty {
+  display: none;
+}
+
+.price-card__name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 0.5rem;
+}
+
+/* Sized to be legible across a counter, and clamped with vw so a long price
+   still fits a 320px phone. Tabular figures stop the digits shifting. */
+.price-card__price {
+  font-size: clamp(3rem, 18vw, 5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  margin: 0.5rem 0;
+  color: var(--bs-primary, #0d6efd);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.price-card__description {
+  color: var(--bs-secondary-color, #6c757d);
+  margin: 0 0 0.5rem;
+}
+
+.price-card__sku {
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 1.5rem;
+}
+
+.price-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.price-card__actions .btn {
+  min-height: var(--touch-target-min, 44px);
+}
+
+/* Scanning the next item is the common repeat action, so it stays the biggest
+   target and sits lowest -- easiest to reach one-handed. */
+.price-card__primary {
+  order: 2;
+  min-height: 3.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+@media (min-width: 576px) {
+  .price-card__actions {
+    flex-direction: row-reverse;
+    justify-content: center;
+  }
+  .price-card__primary {
+    flex: 0 1 16rem;
+  }
+}

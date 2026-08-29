@@ -94,7 +94,10 @@
     "switchCamera": "החלף מצלמה",
     "pointAtBarcode": "החזק את הברקוד בתוך המסגרת, במרחק של כ-20 ס\"מ.",
     "takePhotoInstead": "צלם תמונה במקום",
-    "orEnterManually": "או הזן את הברקוד ידנית"
+    "orEnterManually": "או הזן את הברקוד ידנית",
+    "scanForPrice": "סרוק לבדיקת מחיר",
+    "noBarcodeQuestion": "אין ברקוד על הפריט?",
+    "searchByName": "חפש לפי שם"
   },
   "createPage": {
     "nameLabel": "שם *",
@@ -153,5 +156,19 @@
     "failedToFetch": "נכשל בטעינת נתוני המוצר: {error}",
     "failedToSearchImage": "נכשל בחיפוש תמונה: {error}",
     "deleteConfirmMessage": "מחק \"{name}\"?"
+  },
+  "lookup": {
+    "priceIs": "מחיר {price}",
+    "scanNext": "סרוק פריט הבא",
+    "editProduct": "ערוך מוצר",
+    "notInSystem": "הפריט אינו קיים במערכת",
+    "addToSystem": "הוסף אותו למערכת",
+    "backToSearch": "חזרה לחיפוש",
+    "checkingMarketPrice": "בודק מחיר התייחסות חיצוני…",
+    "noMarketPrice": "לא נמצא מחיר התייחסות חיצוני עבור ברקוד זה.",
+    "marketAverageLabel": "ממוצע מחירי שוק חיצוני",
+    "notStorePrice": "זהו אינו מחיר החנות.",
+    "confirmBeforeQuoting": "יש לאשר מול אחראי לפני מסירת המחיר ללקוח.",
+    "backToPrice": "חזרה למחיר"
   }
 }

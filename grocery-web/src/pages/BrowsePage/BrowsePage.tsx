@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Form, InputGroup, Spinner, Alert } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
+import { Button, Form, InputGroup } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useSkuLookup } from '../../hooks/useSkuLookup'
 import BarcodeScanner from '../../components/BarcodeScanner/BarcodeScanner'
@@ -9,77 +10,67 @@ export default function BrowsePage() {
   const { t } = useLanguage()
   const [sku, setSku] = useState('')
   const [showScanner, setShowScanner] = useState(false)
-  const { lookup, isLooking, error, clearError } = useSkuLookup()
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    void lookup(sku)
-  }
+  const { lookup } = useSkuLookup()
 
   return (
     <div className="browse-page">
-      <p className="text-muted text-center mb-4">{t('browsePage.scanOrEnterBarcode')}</p>
+      <p className="browse-page__lede">{t('browsePage.scanOrEnterBarcode')}</p>
 
-      {/* Scanning is the primary action, so it gets the primary affordance
-          rather than an icon button tucked inside the search field. */}
+      {/* Checking a price is what this app is mostly used for, so scanning is
+          the primary affordance rather than an icon inside a search field. */}
       <Button
         variant="primary"
         size="lg"
         className="browse-page__scan"
-        onClick={() => {
-          clearError()
-          setShowScanner(true)
-        }}
-        disabled={isLooking}
+        onClick={() => setShowScanner(true)}
       >
         <span className="browse-page__scan-icon" aria-hidden="true">
           📷
         </span>
-        {t('browsePage.scanBarcode')}
+        {t('browsePage.scanForPrice')}
       </Button>
 
       <div className="browse-page__divider">
         <span>{t('browsePage.orEnterManually')}</span>
       </div>
 
-      {/* A real <form> so the phone keyboard's Go/Search key submits. */}
-      <Form onSubmit={handleSubmit}>
+      {/* A real <form> so the phone keyboard's Go key submits. */}
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault()
+          lookup(sku)
+        }}
+      >
         <InputGroup>
           <Form.Control
             value={sku}
-            onChange={(e) => {
-              setSku(e.target.value)
-              clearError()
-            }}
+            onChange={(e) => setSku(e.target.value)}
             placeholder={t('browsePage.findBySku')}
             aria-label={t('browsePage.findBySku')}
-            // Barcodes are numeric: open the numeric keypad, and keep the
-            // browser from offering autocomplete suggestions over it.
+            // Barcodes are numeric: open the numeric keypad and keep
+            // autocomplete from covering it.
             inputMode="numeric"
             enterKeyHint="search"
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
-            disabled={isLooking}
           />
-          <Button type="submit" variant="outline-primary" disabled={isLooking || !sku.trim()}>
-            {isLooking ? <Spinner animation="border" size="sm" /> : t('browsePage.findBySkuButton')}
+          <Button type="submit" variant="outline-primary" disabled={!sku.trim()}>
+            {t('browsePage.findBySkuButton')}
           </Button>
         </InputGroup>
       </Form>
 
-      {error && (
-        <Alert variant="danger" className="mt-3" dismissible onClose={clearError}>
-          {error}
-        </Alert>
-      )}
+      {/* Not every item has a readable barcode -- loose produce, worn labels --
+          so searching by name has to be reachable from the main screen. */}
+      <p className="browse-page__alt">
+        {t('browsePage.noBarcodeQuestion')}{' '}
+        <Link to="/view">{t('browsePage.searchByName')}</Link>
+      </p>
 
       <BarcodeScanner
         isOpen={showScanner}
-        onScan={(value) => {
-          setSku(value)
-          void lookup(value)
-        }}
+        onScan={(value) => lookup(value)}
         onClose={() => setShowScanner(false)}
       />
     </div>

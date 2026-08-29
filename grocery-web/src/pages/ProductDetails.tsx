@@ -38,7 +38,6 @@ export default function ProductDetails() {
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [savedNotice, setSavedNotice] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [autoFillNote, setAutoFillNote] = useState<string | null>(null)
   const [isAutoFilling, setIsAutoFilling] = useState(false)
@@ -142,7 +141,9 @@ export default function ProductDetails() {
       })
       setProduct(updated)
       photo.clear()
-      setSavedNotice(true)
+      // Return to the price view so the new price is confirmed on the screen
+      // an employee actually reads, rather than left implicit in a form field.
+      navigate(`/products/${id}`, { replace: true })
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -180,18 +181,12 @@ export default function ProductDetails() {
   return (
     <div className="product-details">
       <div className="mb-3">
-        <Link to="/view">← {t('productDetails.backToList')}</Link>
+        <Link to={`/products/${id}`}>← {t('lookup.backToPrice')}</Link>
       </div>
 
       <Card className="shadow-sm">
         <Card.Body>
           <h1 className="h4 mb-4">{t('productDetails.updateProduct')}</h1>
-
-          {savedNotice && (
-            <Alert variant="success" dismissible onClose={() => setSavedNotice(false)}>
-              {t('productDetails.productUpdated')}
-            </Alert>
-          )}
 
           <Form onSubmit={handleSave} className="text-start" noValidate>
             <Form.Group className="mb-3">

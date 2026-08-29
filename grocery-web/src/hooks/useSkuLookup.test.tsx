@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { useSkuLookup } from './useSkuLookup'
-import { ApiError } from '../api/http'
-import * as products from '../api/products'
 
 const navigate = vi.fn()
 
@@ -13,14 +11,11 @@ vi.mock('react-router-dom', async () => {
 })
 
 function Harness({ sku }: { sku: string }) {
-  const { lookup, error } = useSkuLookup()
+  const { lookup } = useSkuLookup()
   return (
-    <div>
-      <button type="button" onClick={() => void lookup(sku)}>
-        go
-      </button>
-      <span data-testid="error">{error ?? ''}</span>
-    </div>
+    <button type="button" onClick={() => lookup(sku)}>
+      go
+    </button>
   )
 }
 
@@ -35,57 +30,27 @@ function renderAndLookup(sku: string) {
 }
 
 describe('useSkuLookup', () => {
-  beforeEach(() => {
-    navigate.mockClear()
-  })
+  beforeEach(() => navigate.mockClear())
 
-  it('navigates to the product when the SKU exists', async () => {
-    vi.spyOn(products, 'getBySku').mockResolvedValue({
-      id: 'abc-123',
-      name: 'Milk 1L',
-      description: null,
-      price: 6.5,
-      sku: '7290000066318',
-      createdAt: '',
-      updatedAt: '',
-    })
-
+  it('routes a scanned barcode to the lookup screen', () => {
     renderAndLookup('7290000066318')
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/products/abc-123'))
+    expect(navigate).toHaveBeenCalledWith('/lookup/7290000066318')
   })
 
-  it('routes an unknown SKU to a prefilled create form', async () => {
-    vi.spyOn(products, 'getBySku').mockRejectedValue(new ApiError(404, 'Not Found', ''))
-
-    renderAndLookup('7290000012345')
-    await waitFor(() =>
-      expect(navigate).toHaveBeenCalledWith('/create', {
-        state: { prefillSku: '7290000012345', autoFill: true },
-      }),
-    )
-  })
-
-  it('surfaces a server error instead of routing to create', async () => {
-    // A 500 must not be mistaken for "product does not exist".
-    vi.spyOn(products, 'getBySku').mockRejectedValue(
-      new ApiError(500, 'Internal Server Error', 'boom'),
-    )
-
-    const { getByTestId } = renderAndLookup('7290000012345')
-    await waitFor(() => expect(getByTestId('error')).not.toBeEmptyDOMElement())
-    expect(navigate).not.toHaveBeenCalled()
-  })
-
-  it('ignores an empty or whitespace-only scan', async () => {
-    const getBySku = vi.spyOn(products, 'getBySku')
-    renderAndLookup('   ')
-    await waitFor(() => expect(getBySku).not.toHaveBeenCalled())
-    expect(navigate).not.toHaveBeenCalled()
-  })
-
-  it('trims surrounding whitespace before looking up', async () => {
-    const getBySku = vi.spyOn(products, 'getBySku').mockRejectedValue(new ApiError(404, 'x', ''))
+  it('trims surrounding whitespace', () => {
     renderAndLookup('  7290000066318 ')
-    await waitFor(() => expect(getBySku).toHaveBeenCalledWith('7290000066318', expect.anything()))
+    expect(navigate).toHaveBeenCalledWith('/lookup/7290000066318')
+  })
+
+  it('ignores an empty or whitespace-only scan', () => {
+    renderAndLookup('   ')
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it('encodes characters that would otherwise break the URL', () => {
+    // Some symbologies (CODE_128 in particular) can carry '/' and '#', which
+    // would silently split the route.
+    renderAndLookup('AB/12#34')
+    expect(navigate).toHaveBeenCalledWith('/lookup/AB%2F12%2334')
   })
 })

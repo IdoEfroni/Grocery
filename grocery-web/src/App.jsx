@@ -6,6 +6,8 @@ import './App.css';
 import LanguageToggle from './components/LanguageToggle/LanguageToggle';
 import BrowsePage from './pages/BrowsePage/BrowsePage';
 import CreatePage from './pages/CreatePage/CreatePage';
+import LookupPage from './pages/LookupPage/LookupPage';
+import ProductPage from './pages/ProductPage/ProductPage';
 import ProductDetails from './pages/ProductDetails';
 import ProductViewer from './pages/ProductViewer/ProductViewer';
 
@@ -34,7 +36,12 @@ export default function App() {
           <Route path="/" element={<BrowsePage />} />
           <Route path="/view" element={<ProductViewer />} />
           <Route path="/create" element={<CreatePage />} />
-          <Route path="/products/:id" element={<ProductDetails />} />
+          {/* Price lookup by barcode -- the primary screen. */}
+          <Route path="/lookup/:sku" element={<LookupPage />} />
+          {/* Read-only price view; editing is a deliberate second step so
+              nobody changes a product while just checking a price. */}
+          <Route path="/products/:id" element={<ProductPage />} />
+          <Route path="/products/:id/edit" element={<ProductDetails />} />
         </Routes>
       </Container>
     </div>
