@@ -3,12 +3,28 @@ name: Build and Deploy to Azure Container Apps
 on:
   push:
     branches:
-      - main  # Matches your current branch name
+      - main
+  # Allows a redeploy of the current main without an empty commit.
+  workflow_dispatch:
+
+# Deployments must not overlap. Two pushes in quick succession would otherwise
+# race and could leave the newer image deployed before the older one, so runs
+# queue instead. cancel-in-progress stays false deliberately: cancelling a run
+# mid-deploy can leave some services updated and others not.
+concurrency:
+  group: deploy-container-apps
+  cancel-in-progress: false
+
+env:
+  REGISTRY: groceryregistryef.azurecr.io
+  RESOURCE_GROUP: rg-grocery-dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
+      # One service failing should not cancel the others' in-flight deploys.
+      fail-fast: false
       matrix:
         include:
           - service: grocery-api
@@ -33,18 +49,61 @@ jobs:
       - name: Log in to ACR
         uses: azure/docker-login@v2
         with:
-          login-server: groceryregistryef.azurecr.io
+          login-server: ${{ env.REGISTRY }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      # The commit SHA is the deployed tag. Deploying a fixed `:latest` is a
+      # silent no-op: Azure Container Apps derives a revision from the container
+      # template, so an unchanged image reference creates no revision and
+      # triggers no image pull. The push succeeds, the deploy reports success,
+      # and the old container keeps serving.
+      #
+      # `latest` is still published as a convenience pointer, but it is never
+      # the thing deployed.
       - name: Build and Push Image
         run: |
-          docker build -f ${{ matrix.dockerfile }} -t groceryregistryef.azurecr.io/${{ matrix.service }}:latest ${{ matrix.context }}
-          docker push groceryregistryef.azurecr.io/${{ matrix.service }}:latest
+          set -euo pipefail
+          IMAGE="${{ env.REGISTRY }}/${{ matrix.service }}"
+          docker build \
+            -f "${{ matrix.dockerfile }}" \
+            -t "$IMAGE:${{ github.sha }}" \
+            -t "$IMAGE:latest" \
+            "${{ matrix.context }}"
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
 
       - name: Deploy to Container App
         uses: azure/container-apps-deploy-action@v2
         with:
-          imageToDeploy: groceryregistryef.azurecr.io/${{ matrix.service }}:latest
+          imageToDeploy: ${{ env.REGISTRY }}/${{ matrix.service }}:${{ github.sha }}
           containerAppName: ${{ matrix.service }}
-          resourceGroup: rg-grocery-dev
+          resourceGroup: ${{ env.RESOURCE_GROUP }}
+
+      # A successful `az containerapp update` only means the request was
+      # accepted. This asserts the active revision actually references the image
+      # built by this run, which is what the previous workflow silently failed
+      # to do.
+      #
+      # Selection is by `active` and newest-created, NOT by trafficWeight:
+      # grocery-thumbnail is a Service Bus worker with no ingress, so its
+      # trafficWeight is 0 even while it is the running revision.
+      - name: Verify deployed revision
+        run: |
+          set -euo pipefail
+          EXPECTED="${{ env.REGISTRY }}/${{ matrix.service }}:${{ github.sha }}"
+          QUERY='sort_by([?properties.active], &properties.createdTime)[-1].properties.template.containers[0].image'
+          for attempt in $(seq 1 30); do
+            ACTIVE=$(az containerapp revision list \
+              --name "${{ matrix.service }}" \
+              --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --query "$QUERY" -o tsv)
+            if [ "$ACTIVE" = "$EXPECTED" ]; then
+              echo "Active revision is running $ACTIVE"
+              exit 0
+            fi
+            echo "attempt $attempt: active image is '$ACTIVE', waiting for '$EXPECTED'"
+            sleep 10
+          done
+          echo "::error::Deploy reported success but the active revision never moved to $EXPECTED"
+          exit 1
