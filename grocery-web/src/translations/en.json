@@ -42,7 +42,9 @@
     "displaySize": "Display size",
     "displaySizeLarge": "Large (1 per row)",
     "displaySizeMedium": "Medium (2 per row)",
-    "displaySizeSmall": "Small (5 per row)"
+    "displaySizeSmall": "Small (5 per row)",
+    "sortPageScopeNote": "Sorts the products on this page only.",
+    "deleteProduct": "Delete {name}"
   },
   "app": {
     "title": "Grocery — Products"
@@ -85,7 +87,14 @@
     "closePreview": "Close Preview",
     "tapToUpdate": "Tap to update product",
     "noBarcodeFound": "No barcode found in image. Try another image.",
-    "useScannedResult": "Use this barcode"
+    "useScannedResult": "Use this barcode",
+    "requiresHttps": "The camera requires a secure (HTTPS) connection. Open this app over HTTPS and try again.",
+    "tryAgain": "Try again",
+    "torch": "Light",
+    "switchCamera": "Switch camera",
+    "pointAtBarcode": "Hold the barcode inside the frame, about 20 cm away.",
+    "takePhotoInstead": "Take a photo instead",
+    "orEnterManually": "or enter the barcode manually"
   },
   "createPage": {
     "nameLabel": "Name *",
@@ -117,7 +126,17 @@
     "capturePhoto": "Capture Photo",
     "stopCamera": "Stop Camera",
     "startingCamera": "Starting camera...",
-    "cameraCaptureTitle": "Capture product photo"
+    "cameraCaptureTitle": "Capture product photo",
+    "skuRequired": "SKU is required.",
+    "noAutoFillData": "No details were found online for this barcode. Please fill the fields in manually.",
+    "notFoundCreatePrompt": "No product with SKU {sku} exists yet. Fill in the details below to add it.",
+    "removePhoto": "Remove photo",
+    "photoFrom": {
+      "upload": "Chosen from your device",
+      "camera": "Taken with the camera",
+      "web": "Found online",
+      "url": "From a link"
+    }
   },
   "productDetails": {
     "updateProduct": "Update Product",
@@ -136,4 +155,3 @@
     "deleteConfirmMessage": "Delete \"{name}\"?"
   }
 }
-

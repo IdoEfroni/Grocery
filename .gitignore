@@ -11,3 +11,6 @@ obj/
 !**/appsettings.Example.json
 .env
 .env.local
+
+# Deploy script output (azure/deploy-*.ps1 redirected to a log)
+*.log

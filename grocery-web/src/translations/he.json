@@ -42,7 +42,9 @@
     "displaySize": "גודל תצוגה",
     "displaySizeLarge": "גדול (1 בשורה)",
     "displaySizeMedium": "בינוני (2 בשורה)",
-    "displaySizeSmall": "קטן (5 בשורה)"
+    "displaySizeSmall": "קטן (5 בשורה)",
+    "sortPageScopeNote": "ממיין את המוצרים בעמוד זה בלבד.",
+    "deleteProduct": "מחק את {name}"
   },
   "app": {
     "title": "מכולת — מוצרים"
@@ -85,7 +87,14 @@
     "closePreview": "סגור תצוגה מקדימה",
     "tapToUpdate": "לחץ לעדכון מוצר",
     "noBarcodeFound": "לא נמצא ברקוד בתמונה. נסה תמונה אחרת.",
-    "useScannedResult": "השתמש בברקוד זה"
+    "useScannedResult": "השתמש בברקוד זה",
+    "requiresHttps": "המצלמה דורשת חיבור מאובטח (HTTPS). פתח את האפליקציה דרך HTTPS ונסה שוב.",
+    "tryAgain": "נסה שוב",
+    "torch": "תאורה",
+    "switchCamera": "החלף מצלמה",
+    "pointAtBarcode": "החזק את הברקוד בתוך המסגרת, במרחק של כ-20 ס\"מ.",
+    "takePhotoInstead": "צלם תמונה במקום",
+    "orEnterManually": "או הזן את הברקוד ידנית"
   },
   "createPage": {
     "nameLabel": "שם *",
@@ -117,7 +126,17 @@
     "capturePhoto": "צלם תמונה",
     "stopCamera": "עצור מצלמה",
     "startingCamera": "מפעיל מצלמה...",
-    "cameraCaptureTitle": "צילום תמונת מוצר"
+    "cameraCaptureTitle": "צילום תמונת מוצר",
+    "skuRequired": "יש להזין מק\"ט.",
+    "noAutoFillData": "לא נמצאו פרטים באינטרנט עבור ברקוד זה. אנא מלא את השדות ידנית.",
+    "notFoundCreatePrompt": "עדיין לא קיים מוצר עם מק\"ט {sku}. מלא את הפרטים למטה כדי להוסיף אותו.",
+    "removePhoto": "הסר תמונה",
+    "photoFrom": {
+      "upload": "נבחר מהמכשיר",
+      "camera": "צולם במצלמה",
+      "web": "נמצא באינטרנט",
+      "url": "מקישור"
+    }
   },
   "productDetails": {
     "updateProduct": "עדכן מוצר",
@@ -136,4 +155,3 @@
     "deleteConfirmMessage": "מחק \"{name}\"?"
   }
 }
-
