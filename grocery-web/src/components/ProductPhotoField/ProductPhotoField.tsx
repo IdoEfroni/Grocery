@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { Alert, Button, Form, Image } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
+import Icon from '../Icon/Icon'
 import type { UseProductPhotoResult } from '../../hooks/useProductPhoto'
 import './ProductPhotoField.css'
 
@@ -50,10 +51,10 @@ export default function ProductPhotoField({
 
       <div className="product-photo-field__actions">
         <Button type="button" variant="outline-secondary" onClick={() => fileInputRef.current?.click()}>
-          <span aria-hidden="true">🖼️</span> {t('createPage.fileUpload')}
+          <Icon name="image" /> {t('createPage.fileUpload')}
         </Button>
         <Button type="button" variant="outline-secondary" onClick={onOpenCamera}>
-          <span aria-hidden="true">📷</span> {t('createPage.camera')}
+          <Icon name="camera" /> {t('createPage.camera')}
         </Button>
         <Button
           type="button"
@@ -61,7 +62,7 @@ export default function ProductPhotoField({
           onClick={() => setShowUrlInput((v) => !v)}
           aria-expanded={showUrlInput}
         >
-          <span aria-hidden="true">🔗</span> {t('createPage.url')}
+          <Icon name="link" /> {t('createPage.url')}
         </Button>
       </div>
 

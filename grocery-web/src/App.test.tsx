@@ -77,7 +77,7 @@ describe('App', () => {
 
     renderAt('/products/abc-123/edit')
 
-    await waitFor(() => expect(screen.getByLabelText(/^name$/i)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(/^name/i)).toBeInTheDocument())
     expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
   })
 

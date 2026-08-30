@@ -1,211 +1,151 @@
-.product-viewer {
+.price-list {
+  max-width: var(--content-max);
+  margin: 0 auto;
   text-align: start;
 }
 
-.product-viewer__header {
-  margin-bottom: 1rem;
+.price-list__search {
+  margin-bottom: var(--sp-4);
 }
 
-.product-viewer__title {
-  font-size: 1.5rem;
-  font-weight: 600;
+.price-list__search .form-control,
+.price-list__search .btn,
+.price-list__search .input-group-text {
+  min-height: var(--touch-target-min);
+  font-size: var(--fs-base);
+}
+
+.price-list__search .input-group-text {
+  background: var(--surface);
+  color: var(--text-muted);
+}
+
+.price-list__rows {
+  list-style: none;
   margin: 0;
-}
-
-.product-viewer__search {
-  max-width: 32rem;
-  margin-bottom: 1rem;
-}
-
-.product-viewer__controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-}
-
-.product-viewer__control {
-  /* Grow to fill, but never demand more width than a 375px phone can give.
-     The previous `min-width: 10rem` on two selects meant 320px of controls in
-     a row on a 343px viewport. */
-  flex: 1 1 10rem;
-  min-width: 0;
-}
-
-/* Responsive grid. Column count comes from the viewport first; the density
-   control only tightens it further on wider screens. Previously a fixed
-   `repeat(5, 1fr)` rendered five ~50px columns on a phone. */
-.product-viewer__grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.product-viewer__grid--comfortable {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 576px) {
-  .product-viewer__grid--comfortable {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .product-viewer__grid--cosy {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .product-viewer__grid--compact {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 768px) {
-  .product-viewer__grid--comfortable {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .product-viewer__grid--cosy {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .product-viewer__grid--compact {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1200px) {
-  .product-viewer__grid--comfortable {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .product-viewer__grid--cosy {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-  .product-viewer__grid--compact {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-
-/* Colours come from Bootstrap's theme tokens rather than hardcoded hex values.
-   The previous rules defaulted to a #1e1e1e card and only switched to white
-   under `prefers-color-scheme: light`, while the page body is always light --
-   so anyone with their phone in dark mode got dark text on a dark card. */
-.product-card {
-  background: var(--bs-body-bg, #fff);
-  border: 1px solid var(--bs-border-color, #dee2e6);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow 0.2s ease;
-}
-
-.product-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.product-card__image-wrap {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
   padding: 0;
-  border: none;
-  min-height: 0;
-  background: var(--bs-tertiary-bg, #f8f9fa);
-  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  position: relative;
+  background: var(--surface-raised);
 }
 
-.product-card__image-wrap:focus-visible {
-  outline: 2px solid var(--bs-primary, #0d6efd);
-  outline-offset: 2px;
+.price-list__rows > li + li .price-row,
+.price-list__rows > li + li.price-row {
+  border-top: 1px solid var(--border);
 }
 
-.product-card__image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
+/* One row per product: small thumbnail, name, and the price given the weight,
+   set in tabular figures so the column reads cleanly top to bottom. */
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  min-height: var(--touch-target-lg);
+  text-decoration: none;
+  color: var(--text);
+  transition: background-color 0.12s ease;
 }
 
-.product-card__no-image {
-  position: absolute;
-  inset: 0;
+a.price-row:hover {
+  background: var(--surface-sunken);
+  color: var(--text);
+}
+
+a.price-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.price-row__thumb {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-sunken);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
-  color: var(--bs-secondary-color, #6c757d);
-  padding: 0.5rem;
-  text-align: center;
+  color: var(--text-muted);
 }
 
-.product-card__body {
-  padding: 0.75rem;
+.price-row__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.price-row__thumb-fallback {
+  font-size: 1.25rem;
+}
+
+.price-row__body {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  flex: 1;
+  gap: 2px;
 }
 
-.product-card__name {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.3;
+.price-row__name {
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  overflow: hidden;
+  text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-.product-card__price {
-  font-size: 1.0625rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--bs-primary, #0d6efd);
+.price-row__sku {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
-.product-card__actions {
-  margin-top: auto;
-  display: flex;
-  justify-content: flex-end;
+.price-row__price {
+  flex: none;
+  font-size: var(--fs-price-sm);
+  font-weight: var(--fw-bold);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.product-card__delete {
-  color: var(--bs-danger, #dc3545);
-  text-decoration: none;
-  min-width: var(--touch-target-min, 44px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Skeletons */
-.product-card--skeleton {
+/* Skeletons keep the list height stable between loads instead of collapsing
+   the page and resetting scroll. */
+.price-row--skeleton {
   pointer-events: none;
 }
 
-.product-card--skeleton .product-card__image-wrap,
-.product-card__skeleton-line {
+.price-row--skeleton .price-row__thumb,
+.price-row__skeleton-line {
   background: linear-gradient(
     90deg,
-    var(--bs-tertiary-bg, #f1f3f5) 25%,
-    var(--bs-secondary-bg, #e9ecef) 37%,
-    var(--bs-tertiary-bg, #f1f3f5) 63%
+    var(--surface-sunken) 25%,
+    var(--border) 37%,
+    var(--surface-sunken) 63%
   );
   background-size: 400% 100%;
-  animation: product-card-shimmer 1.4s ease infinite;
+  animation: price-row-shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
 }
 
-.product-card__skeleton-line {
+.price-row__skeleton-line {
   display: block;
   height: 0.75rem;
-  border-radius: 4px;
+  width: 70%;
 }
 
-.product-card__skeleton-line--short {
-  width: 45%;
+.price-row__skeleton-line--short {
+  width: 35%;
+  margin-top: var(--sp-2);
 }
 
-@keyframes product-card-shimmer {
+@keyframes price-row-shimmer {
   0% {
     background-position: 100% 50%;
   }
@@ -214,33 +154,34 @@
   }
 }
 
-.product-viewer__pagination {
+.price-list__empty {
+  text-align: center;
+  padding: var(--sp-6) var(--sp-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.price-list__empty-title {
+  color: var(--text-muted);
+  margin-bottom: var(--sp-4);
+}
+
+.price-list__empty .btn {
+  min-height: var(--touch-target-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.price-list__pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
 }
 
-/* Confirmation, replacing window.confirm so it renders in the app's own
-   direction and styling rather than the browser's. */
-.product-viewer__confirm {
-  position: fixed;
-  inset: 0;
-  z-index: 1080;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.product-viewer__confirm-panel {
-  background: var(--bs-body-bg, #fff);
-  border-radius: 12px;
-  padding: 1.25rem;
-  max-width: 26rem;
-  width: 100%;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+.price-list__pagination .btn {
+  min-height: var(--touch-target-min);
 }

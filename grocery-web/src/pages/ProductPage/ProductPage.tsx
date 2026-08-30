@@ -4,13 +4,14 @@ import { Alert, Button, Spinner } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { getProductById, type Product } from '../../api/products'
 import ProductPriceCard from '../../components/ProductPriceCard/ProductPriceCard'
+import QuickPriceEdit from '../../components/QuickPriceEdit/QuickPriceEdit'
 import BarcodeScanner from '../../components/BarcodeScanner/BarcodeScanner'
 
 /**
  * Price view for a product reached by id (from the list, or after creating one).
  *
- * Same read-only card as the scan lookup, so a product looks identical however
- * it was reached, and editing is always a deliberate second step.
+ * Renders the same card as the scan lookup, so a product looks identical
+ * however it was reached and editing is always a deliberate second step.
  */
 export default function ProductPage() {
   const { id = '' } = useParams<{ id: string }>()
@@ -21,6 +22,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showScanner, setShowScanner] = useState(false)
+  const [editingPrice, setEditingPrice] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -46,7 +48,7 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-5" role="status">
+      <div className="page-center" role="status">
         <Spinner animation="border" />
         <p className="text-muted mt-3 mb-0">{t('common.loading')}</p>
       </div>
@@ -62,12 +64,22 @@ export default function ProductPage() {
         product={product}
         onEdit={() => navigate(`/products/${product.id}/edit`)}
         onScanNext={() => setShowScanner(true)}
+        onEditPrice={() => setEditingPrice(true)}
       />
+
+      <QuickPriceEdit
+        product={product}
+        isOpen={editingPrice}
+        onClose={() => setEditingPrice(false)}
+        onSaved={setProduct}
+      />
+
       <BarcodeScanner
         isOpen={showScanner}
         onScan={(value) => navigate(`/lookup/${encodeURIComponent(value)}`)}
         onClose={() => setShowScanner(false)}
       />
+
       <div className="text-center mt-4">
         <Button variant="link" onClick={() => navigate('/view')}>
           {t('productDetails.backToList')}

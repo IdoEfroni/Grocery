@@ -44,7 +44,10 @@
     "displaySizeMedium": "בינוני (2 בשורה)",
     "displaySizeSmall": "קטן (5 בשורה)",
     "sortPageScopeNote": "ממיין את המוצרים בעמוד זה בלבד.",
-    "deleteProduct": "מחק את {name}"
+    "deleteProduct": "מחק את {name}",
+    "findAPrice": "חיפוש מחיר",
+    "noMatches": "לא נמצאו תוצאות עבור \"{query}\".",
+    "addNewProduct": "הוסף מוצר חדש"
   },
   "app": {
     "title": "מכולת — מוצרים"
@@ -103,7 +106,7 @@
     "nameLabel": "שם *",
     "descriptionLabel": "תיאור",
     "priceLabel": "מחיר *",
-    "skuLabel": "מק\"ט",
+    "skuLabel": "מק\"ט *",
     "skuPlaceholder": "אופציונלי, חייב להיות ייחודי",
     "fillAutomatically": "מלא שדות אוטומטית",
     "photoUploadMode": "מצב העלאת תמונה",
@@ -170,5 +173,12 @@
     "notStorePrice": "זהו אינו מחיר החנות.",
     "confirmBeforeQuoting": "יש לאשר מול אחראי לפני מסירת המחיר ללקוח.",
     "backToPrice": "חזרה למחיר"
+  },
+  "quickPrice": {
+    "title": "עדכון מחיר",
+    "currentPrice": "מחיר נוכחי:",
+    "newPrice": "מחיר חדש",
+    "savePrice": "שמור מחיר",
+    "editPriceAria": "מחיר {price}. הקש לעדכון."
   }
 }

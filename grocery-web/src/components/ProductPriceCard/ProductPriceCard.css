@@ -1,5 +1,5 @@
 .price-card {
-  max-width: 32rem;
+  max-width: var(--content-max);
   margin: 0 auto;
   text-align: center;
 }
@@ -8,10 +8,10 @@
   width: 100%;
   max-width: 15rem;
   aspect-ratio: 1;
-  margin: 0 auto 1rem;
-  border-radius: 12px;
+  margin: 0 auto var(--sp-4);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--bs-tertiary-bg, #f8f9fa);
+  background: var(--surface-sunken);
 }
 
 .price-card__photo img {
@@ -21,61 +21,94 @@
   display: block;
 }
 
-/* Collapse the frame entirely when there is no photo, rather than leaving an
+/* Collapse the frame entirely when there is no photo rather than leaving an
    empty grey square above the price. */
 .price-card__photo.is-empty {
   display: none;
 }
 
 .price-card__name {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.3;
-  margin: 0 0 0.5rem;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  margin: 0 0 var(--sp-2);
+  color: var(--text);
 }
 
-/* Sized to be legible across a counter, and clamped with vw so a long price
-   still fits a 320px phone. Tabular figures stop the digits shifting. */
+/* The point of the screen. Tabular figures stop digits shifting between
+   values, and the clamp keeps a long price on one line at 320px. */
 .price-card__price {
-  font-size: clamp(3rem, 18vw, 5rem);
-  font-weight: 800;
-  line-height: 1.05;
-  margin: 0.5rem 0;
-  color: var(--bs-primary, #0d6efd);
+  display: block;
+  font-size: var(--fs-price);
+  font-weight: var(--fw-black);
+  line-height: var(--lh-tight);
+  margin: var(--sp-2) 0;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 
+/* Editable variant: still reads as the price first, with the affordance kept
+   quiet so it never competes with the number. */
+.price-card__price--editable {
+  position: relative;
+  width: 100%;
+  background: none;
+  border: 2px dashed transparent;
+  border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.price-card__price--editable:hover,
+.price-card__price--editable:focus-visible {
+  border-color: var(--border-strong);
+  background: var(--surface-sunken);
+  outline: none;
+}
+
+.price-card__price-icon {
+  font-size: var(--fs-base);
+  color: var(--text-muted);
+  margin-inline-start: var(--sp-2);
+  vertical-align: middle;
+}
+
 .price-card__description {
-  color: var(--bs-secondary-color, #6c757d);
-  margin: 0 0 0.5rem;
+  color: var(--text-muted);
+  margin: 0 0 var(--sp-2);
 }
 
 .price-card__sku {
-  color: var(--bs-secondary-color, #6c757d);
-  font-size: 0.9375rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
   font-variant-numeric: tabular-nums;
-  margin: 0 0 1.5rem;
+  margin: 0 0 var(--sp-5);
 }
 
 .price-card__actions {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--sp-3);
   align-items: stretch;
 }
 
 .price-card__actions .btn {
-  min-height: var(--touch-target-min, 44px);
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
 }
 
 /* Scanning the next item is the common repeat action, so it stays the biggest
    target and sits lowest -- easiest to reach one-handed. */
 .price-card__primary {
   order: 2;
-  min-height: 3.5rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  min-height: var(--touch-target-lg);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
 }
 
 @media (min-width: 576px) {

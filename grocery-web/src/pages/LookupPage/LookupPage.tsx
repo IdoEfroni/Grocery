@@ -7,7 +7,9 @@ import { comparePrices, getBySku, type Product } from '../../api/products'
 import { COMPARE_RESULT_COUNT, SHOPPING_CITY } from '../../config'
 import ProductPriceCard from '../../components/ProductPriceCard/ProductPriceCard'
 import MarketPriceHint from '../../components/MarketPriceHint/MarketPriceHint'
+import QuickPriceEdit from '../../components/QuickPriceEdit/QuickPriceEdit'
 import BarcodeScanner from '../../components/BarcodeScanner/BarcodeScanner'
+import Icon from '../../components/Icon/Icon'
 import './LookupPage.css'
 
 type State =
@@ -30,6 +32,7 @@ export default function LookupPage() {
 
   const [state, setState] = useState<State>({ status: 'loading' })
   const [showScanner, setShowScanner] = useState(false)
+  const [editingPrice, setEditingPrice] = useState(false)
 
   const [marketLoading, setMarketLoading] = useState(false)
   const [marketPrice, setMarketPrice] = useState<string | null>(null)
@@ -112,11 +115,20 @@ export default function LookupPage() {
       )}
 
       {state.status === 'found' && (
-        <ProductPriceCard
-          product={state.product}
-          onEdit={() => navigate(`/products/${state.product.id}/edit`)}
-          onScanNext={() => setShowScanner(true)}
-        />
+        <>
+          <ProductPriceCard
+            product={state.product}
+            onEdit={() => navigate(`/products/${state.product.id}/edit`)}
+            onScanNext={() => setShowScanner(true)}
+            onEditPrice={() => setEditingPrice(true)}
+          />
+          <QuickPriceEdit
+            product={state.product}
+            isOpen={editingPrice}
+            onClose={() => setEditingPrice(false)}
+            onSaved={(updated) => setState({ status: 'found', product: updated })}
+          />
+        </>
       )}
 
       {state.status === 'not-found' && (
@@ -143,7 +155,7 @@ export default function LookupPage() {
               {t('lookup.addToSystem')}
             </Button>
             <Button variant="outline-secondary" onClick={() => setShowScanner(true)}>
-              <span aria-hidden="true">📷</span> {t('lookup.scanNext')}
+              <Icon name="barcode" /> {t('lookup.scanNext')}
             </Button>
           </div>
         </div>

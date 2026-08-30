@@ -44,7 +44,10 @@
     "displaySizeMedium": "Medium (2 per row)",
     "displaySizeSmall": "Small (5 per row)",
     "sortPageScopeNote": "Sorts the products on this page only.",
-    "deleteProduct": "Delete {name}"
+    "deleteProduct": "Delete {name}",
+    "findAPrice": "Find a price",
+    "noMatches": "Nothing found for \"{query}\".",
+    "addNewProduct": "Add a new product"
   },
   "app": {
     "title": "Grocery — Products"
@@ -103,7 +106,7 @@
     "nameLabel": "Name *",
     "descriptionLabel": "Description",
     "priceLabel": "Price *",
-    "skuLabel": "SKU",
+    "skuLabel": "SKU *",
     "skuPlaceholder": "Optional, must be unique",
     "fillAutomatically": "Fill Fields Automatically",
     "photoUploadMode": "Photo Upload Mode",
@@ -170,5 +173,12 @@
     "notStorePrice": "This is NOT the store price.",
     "confirmBeforeQuoting": "Confirm with a manager before quoting it to a customer.",
     "backToPrice": "Back to the price"
+  },
+  "quickPrice": {
+    "title": "Update price",
+    "currentPrice": "Current price:",
+    "newPrice": "New price",
+    "savePrice": "Save price",
+    "editPriceAria": "Price {price}. Tap to update."
   }
 }

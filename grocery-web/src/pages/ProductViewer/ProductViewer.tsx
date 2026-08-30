@@ -1,80 +1,54 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Alert, Button, Form, InputGroup, Spinner } from 'react-bootstrap'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Alert, Button, Form, InputGroup } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
-import { deleteProduct, getPhotoUrl, searchProducts, type Product } from '../../api/products'
+import { getPhotoUrl, searchProducts, type Product } from '../../api/products'
 import { formatPrice } from '../../utils/formatPrice'
 import BarcodeScanner from '../../components/BarcodeScanner/BarcodeScanner'
+import Icon from '../../components/Icon/Icon'
 import './ProductViewer.css'
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 20
 const SEARCH_DEBOUNCE_MS = 350
 
-const DENSITIES = [
-  { value: 'comfortable', labelKey: 'productViewer.displaySizeLarge' },
-  { value: 'cosy', labelKey: 'productViewer.displaySizeMedium' },
-  { value: 'compact', labelKey: 'productViewer.displaySizeSmall' },
-] as const
-
-type Density = (typeof DENSITIES)[number]['value']
-
-const SORT_OPTIONS = [
-  { value: 'relevance', labelKey: 'productViewer.sortRelevance' },
-  { value: 'price_asc', labelKey: 'productViewer.sortPriceLowHigh' },
-  { value: 'price_desc', labelKey: 'productViewer.sortPriceHighLow' },
-  { value: 'name_asc', labelKey: 'productViewer.sortNameAZ' },
-  { value: 'name_desc', labelKey: 'productViewer.sortNameZA' },
-] as const
-
-type SortBy = (typeof SORT_OPTIONS)[number]['value']
-
-function sortItems(items: Product[], sortBy: SortBy): Product[] {
-  const list = [...items]
-  switch (sortBy) {
-    case 'price_asc':
-      return list.sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
-    case 'price_desc':
-      return list.sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
-    case 'name_asc':
-      return list.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
-    case 'name_desc':
-      return list.sort((a, b) => (b.name ?? '').localeCompare(a.name ?? ''))
-    default:
-      return list
-  }
-}
-
+/**
+ * Find a price by name.
+ *
+ * This screen exists for the case where a barcode is not usable -- loose
+ * produce, a worn label, a torn package. So it is a price list, not a photo
+ * gallery: one row per product, thumbnail small, price large and aligned for
+ * scanning down. The previous grid rendered the price at 17px, which was the
+ * smallest thing on the card people opened it to read.
+ *
+ * Deliberately has no delete control. Deleting belongs in the edit form, not on
+ * a screen new employees use to look things up.
+ */
 export default function ProductViewer() {
   const { t, language } = useLanguage()
   const navigate = useNavigate()
+  const locale = language === 'he' ? 'he-IL' : 'en-IL'
 
   const [queryInput, setQueryInput] = useState('')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
-  const [sortBy, setSortBy] = useState<SortBy>('relevance')
-  const [density, setDensity] = useState<Density>('cosy')
 
   const [items, setItems] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [pendingDelete, setPendingDelete] = useState<Product | null>(null)
   const [showScanner, setShowScanner] = useState(false)
 
-  // Debounce typing into the committed query. Without this the page fired one
+  // Debounce typing into the committed query; previously this fired one
   // request per keystroke.
   useEffect(() => {
     const timer = setTimeout(() => {
       setQuery(queryInput.trim())
-      // A new query invalidates the current page number; staying on page 5
-      // would show an empty grid.
+      // A new query invalidates the page number: staying on page 3 would show
+      // an empty list.
       setPage(1)
     }, SEARCH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
   }, [queryInput])
-
-  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -96,42 +70,19 @@ export default function ProductViewer() {
         if (!controller.signal.aborted) setLoading(false)
       })
 
-    // Aborting on cleanup is what stops a slow earlier response from
-    // overwriting a faster later one.
+    // Aborting on cleanup stops a slow earlier response overwriting a faster
+    // later one.
     return () => controller.abort()
-  }, [query, page, reloadToken])
+  }, [query, page])
 
-  const visibleItems = useMemo(
-    () => (sortBy === 'relevance' ? items : sortItems(items, sortBy)),
-    [items, sortBy],
-  )
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  const confirmDelete = async () => {
-    const product = pendingDelete
-    if (!product) return
-    setPendingDelete(null)
-    setDeletingId(product.id)
-    try {
-      await deleteProduct(product.id)
-      setReloadToken((n) => n + 1)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    } finally {
-      setDeletingId(null)
-    }
-  }
-
   return (
-    <div className="product-viewer">
-      <div className="product-viewer__header">
-        <h1 className="product-viewer__title">
-          {t('productViewer.productList')} ({total})
-        </h1>
-      </div>
+    <div className="price-list">
+      <h1 className="page-title">{t('productViewer.findAPrice')}</h1>
 
       <Form
-        className="product-viewer__search"
+        className="price-list__search"
         onSubmit={(e) => {
           e.preventDefault()
           setQuery(queryInput.trim())
@@ -139,6 +90,9 @@ export default function ProductViewer() {
         }}
       >
         <InputGroup>
+          <InputGroup.Text aria-hidden="true">
+            <Icon name="search" />
+          </InputGroup.Text>
           <Form.Control
             value={queryInput}
             onChange={(e) => setQueryInput(e.target.value)}
@@ -154,52 +108,10 @@ export default function ProductViewer() {
             aria-label={t('browsePage.scanBarcode')}
             title={t('browsePage.scanBarcode')}
           >
-            <span aria-hidden="true">📷</span>
+            <Icon name="barcode" />
           </Button>
         </InputGroup>
       </Form>
-
-      <div className="product-viewer__controls">
-        <Form.Group className="product-viewer__control">
-          <Form.Label htmlFor="product-viewer-density" className="visually-hidden">
-            {t('productViewer.displaySize')}
-          </Form.Label>
-          <Form.Select
-            id="product-viewer-density"
-            value={density}
-            onChange={(e) => setDensity(e.target.value as Density)}
-          >
-            {DENSITIES.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {t(opt.labelKey)}
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="product-viewer__control">
-          <Form.Label htmlFor="product-viewer-sort" className="visually-hidden">
-            {t('productViewer.sortBy')}
-          </Form.Label>
-          {/* Labelled as page-scoped because the API returns one page at a time
-              and has no sort parameter -- sorting here genuinely only reorders
-              the 12 visible items. */}
-          <Form.Select
-            id="product-viewer-sort"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortBy)}
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {t(opt.labelKey)}
-              </option>
-            ))}
-          </Form.Select>
-          {sortBy !== 'relevance' && totalPages > 1 && (
-            <Form.Text className="text-muted">{t('productViewer.sortPageScopeNote')}</Form.Text>
-          )}
-        </Form.Group>
-      </div>
 
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError(null)}>
@@ -207,75 +119,66 @@ export default function ProductViewer() {
         </Alert>
       )}
 
-      {/* Skeletons keep the page height stable. Previously the grid unmounted
-          on every load, collapsing the layout and resetting scroll. */}
-      <div className={`product-viewer__grid product-viewer__grid--${density}`}>
-        {loading
-          ? Array.from({ length: PAGE_SIZE }, (_, i) => (
-              <div key={`skeleton-${i}`} className="product-card product-card--skeleton" aria-hidden="true">
-                <div className="product-card__image-wrap" />
-                <div className="product-card__body">
-                  <span className="product-card__skeleton-line" />
-                  <span className="product-card__skeleton-line product-card__skeleton-line--short" />
-                </div>
-              </div>
-            ))
-          : visibleItems.map((p) => (
-              <article key={p.id} className="product-card" aria-label={p.name}>
-                <button
-                  type="button"
-                  className="product-card__image-wrap"
-                  onClick={() => navigate(`/products/${p.id}`)}
-                  aria-label={t('productViewer.viewProduct', { name: p.name })}
-                >
-                  {p.sku ? (
-                    <img
-                      src={getPhotoUrl(p.sku)}
-                      alt=""
-                      className="product-card__image"
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        e.currentTarget.style.visibility = 'hidden'
-                      }}
-                    />
-                  ) : (
-                    <span className="product-card__no-image">{t('common.noImageAvailable')}</span>
-                  )}
-                </button>
-                <div className="product-card__body">
-                  <h2 className="product-card__name">{p.name}</h2>
-                  <p className="product-card__price">
-                    {formatPrice(p.price, language === 'he' ? 'he-IL' : 'en-IL')}
-                  </p>
-                  {/* Deliberately a small, right-aligned control rather than a
-                      full-width button directly under the tappable image. */}
-                  <div className="product-card__actions">
-                    <Button
-                      variant="link"
-                      className="product-card__delete"
-                      onClick={() => setPendingDelete(p)}
-                      disabled={deletingId === p.id}
-                      aria-label={t('productViewer.deleteProduct', { name: p.name })}
-                    >
-                      {deletingId === p.id ? (
-                        <Spinner animation="border" size="sm" />
-                      ) : (
-                        <span aria-hidden="true">🗑</span>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </article>
-            ))}
-      </div>
+      {loading && (
+        <ul className="price-list__rows" aria-hidden="true">
+          {Array.from({ length: 6 }, (_, i) => (
+            <li key={`sk-${i}`} className="price-row price-row--skeleton">
+              <span className="price-row__thumb" />
+              <span className="price-row__body">
+                <span className="price-row__skeleton-line" />
+                <span className="price-row__skeleton-line price-row__skeleton-line--short" />
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      {!loading && visibleItems.length === 0 && (
-        <p className="text-center text-muted py-5">{t('browsePage.noProducts')}</p>
+      {!loading && items.length > 0 && (
+        <ul className="price-list__rows">
+          {items.map((p) => (
+            <li key={p.id}>
+              <Link to={`/products/${p.id}`} className="price-row">
+                <span className="price-row__thumb">
+                  {p.sku ? (
+                    <img src={getPhotoUrl(p.sku)} alt="" loading="lazy" decoding="async" />
+                  ) : (
+                    <Icon name="image" className="price-row__thumb-fallback" />
+                  )}
+                </span>
+                <span className="price-row__body">
+                  <span className="price-row__name">{p.name}</span>
+                  {p.sku && (
+                    <span className="price-row__sku" dir="ltr">
+                      {p.sku}
+                    </span>
+                  )}
+                </span>
+                <span className="price-row__price">{formatPrice(p.price, locale)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* An empty search used to be a dead end -- which is exactly the moment
+          someone needs to add the item they are holding. */}
+      {!loading && items.length === 0 && (
+        <div className="price-list__empty">
+          <p className="price-list__empty-title">
+            {query ? t('productViewer.noMatches', { query }) : t('browsePage.noProducts')}
+          </p>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => navigate('/create', { state: { prefillName: query } })}
+          >
+            <Icon name="plus" /> {t('productViewer.addNewProduct')}
+          </Button>
+        </div>
       )}
 
       {totalPages > 1 && (
-        <nav className="product-viewer__pagination" aria-label={t('common.page')}>
+        <nav className="price-list__pagination" aria-label={t('common.page')}>
           <Button
             variant="outline-secondary"
             disabled={page <= 1 || loading}
@@ -296,27 +199,9 @@ export default function ProductViewer() {
         </nav>
       )}
 
-      {pendingDelete && (
-        <div className="product-viewer__confirm" role="alertdialog" aria-modal="true">
-          <div className="product-viewer__confirm-panel">
-            <p className="mb-3">
-              {t('productDetails.deleteConfirmMessage', { name: pendingDelete.name })}
-            </p>
-            <div className="d-flex gap-2 justify-content-end">
-              <Button variant="secondary" onClick={() => setPendingDelete(null)}>
-                {t('common.cancel')}
-              </Button>
-              <Button variant="danger" onClick={() => void confirmDelete()}>
-                {t('common.delete')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <BarcodeScanner
         isOpen={showScanner}
-        onScan={(value) => setQueryInput(value)}
+        onScan={(value) => navigate(`/lookup/${encodeURIComponent(value)}`)}
         onClose={() => setShowScanner(false)}
       />
     </div>

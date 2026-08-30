@@ -1,0 +1,65 @@
+.product-form {
+  text-align: start;
+}
+
+.product-form__group {
+  margin-bottom: var(--sp-4);
+}
+
+.product-form__group .form-label {
+  font-weight: var(--fw-medium);
+  margin-bottom: var(--sp-1);
+}
+
+.product-form__group .form-control,
+.product-form__group .btn {
+  min-height: var(--touch-target-min);
+}
+
+/* Price is the field most often changed, so it gets a heavier treatment and a
+   currency affix rather than sitting as one plain number among several. */
+.product-form__price .form-control {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.product-form__price .input-group-text {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  background: var(--surface-sunken);
+}
+
+.product-form__assist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.product-form__assist .btn {
+  flex: 1 1 12rem;
+  min-height: var(--touch-target-min);
+}
+
+.product-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+
+.product-form__actions .btn-lg {
+  flex: 1 1 12rem;
+  min-height: var(--touch-target-lg);
+  font-weight: var(--fw-semibold);
+}
+
+/* Destructive actions are pushed to the far edge so Save and Delete are never
+   adjacent targets. */
+.product-form__actions .product-form__danger {
+  margin-inline-start: auto;
+  min-height: var(--touch-target-min);
+}

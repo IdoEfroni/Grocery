@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Modal, Button, Spinner, Form } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
+import Icon from '../Icon/Icon'
 import {
   ROI,
   detectBarcodeFromImageFile,
@@ -179,7 +180,7 @@ export default function BarcodeScanner({ isOpen, onScan, onClose }: BarcodeScann
               onClick={toggleTorch}
               aria-pressed={torchOn}
             >
-              <span aria-hidden="true">🔦</span> {t('browsePage.torch')}
+              <Icon name="torch" /> {t('browsePage.torch')}
             </Button>
           )}
 
@@ -195,7 +196,7 @@ export default function BarcodeScanner({ isOpen, onScan, onClose }: BarcodeScann
               </>
             ) : (
               <>
-                <span aria-hidden="true">📸</span> {t('browsePage.takePhotoInstead')}
+                <Icon name="camera" /> {t('browsePage.takePhotoInstead')}
               </>
             )}
           </Button>

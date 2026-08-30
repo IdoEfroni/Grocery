@@ -4,6 +4,7 @@ import { Button, Form, InputGroup } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useSkuLookup } from '../../hooks/useSkuLookup'
 import BarcodeScanner from '../../components/BarcodeScanner/BarcodeScanner'
+import Icon from '../../components/Icon/Icon'
 import './BrowsePage.css'
 
 export default function BrowsePage() {
@@ -24,9 +25,7 @@ export default function BrowsePage() {
         className="browse-page__scan"
         onClick={() => setShowScanner(true)}
       >
-        <span className="browse-page__scan-icon" aria-hidden="true">
-          📷
-        </span>
+        <Icon name="barcode" className="browse-page__scan-icon" />
         {t('browsePage.scanForPrice')}
       </Button>
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Modal, Form } from 'react-bootstrap';
 import { useLanguage } from '../../contexts/LanguageContext';
+import Icon from '../Icon/Icon';
 
 const LANG_OPTIONS = [
   { value: 'he', key: 'settings.israelHebrew' },
@@ -26,7 +27,7 @@ export default function LanguageToggle() {
         title={t('settings.pageSettings')}
         aria-label={t('settings.pageSettings')}
       >
-        <span className="settings-icon" aria-hidden="true">⚙</span>
+        <Icon name="settings" className="settings-icon" />
         <span className="d-none d-sm-inline">{t('settings.pageSettings')}</span>
       </Button>
 

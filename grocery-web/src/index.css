@@ -1,26 +1,26 @@
+@import './styles/tokens.css';
+
 /* Global base. Bootstrap is loaded before this file (see main.jsx), so rules
-   here intentionally win at equal specificity without needing !important. */
+   here win at equal specificity without needing !important. */
 
 :root {
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  line-height: var(--lh-normal);
+  font-weight: var(--fw-normal);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /* Minimum comfortable tap size (iOS HIG 44pt / Material 48dp). */
-  --touch-target-min: 44px;
 }
 
 html,
 body {
   margin: 0;
-  /* Bootstrap paints the body; matching it here stops iOS rubber-band
-     overscroll from revealing a differently coloured strip. */
-  background-color: var(--bs-body-bg, #fff);
+  /* Matching the body colour stops iOS rubber-band overscroll revealing a
+     differently coloured strip. */
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 body {
@@ -30,15 +30,14 @@ body {
   min-height: 100dvh;
 }
 
-/* Older browsers without dvh support. */
 @supports not (height: 100dvh) {
   body {
     min-height: 100vh;
   }
 }
 
-/* 16px is the threshold below which iOS Safari zooms the page on focus and
-   does not zoom back out. Applies to Bootstrap's -sm control variants too. */
+/* 16px is the threshold below which iOS Safari zooms on focus and does not
+   zoom back out. Covers Bootstrap's -sm control variants too. */
 input,
 textarea,
 select,
@@ -46,10 +45,9 @@ select,
 .form-select,
 .form-control-sm,
 .form-select-sm {
-  font-size: 16px;
+  font-size: var(--fs-base);
 }
 
-/* Every interactive control gets a real tap target, not just the navbar. */
 .btn,
 .form-control,
 .form-select,
@@ -58,8 +56,6 @@ button,
   min-height: var(--touch-target-min);
 }
 
-/* Bootstrap's .btn-sm is used for genuinely secondary actions; keep it visually
-   small but still tappable. */
 .btn-sm {
   min-height: var(--touch-target-min);
   display: inline-flex;
@@ -67,11 +63,64 @@ button,
   justify-content: center;
 }
 
+.btn {
+  font-weight: var(--fw-medium);
+}
+
 img {
   max-width: 100%;
 }
 
-/* Respect a user's motion preference across the app. */
+/* Shared page furniture, so every screen frames its content the same way. */
+.page-narrow {
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.page-center {
+  text-align: center;
+  padding: var(--sp-7) 0;
+}
+
+.page-title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  margin: 0 0 var(--sp-5);
+}
+
+.page-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: var(--touch-target-min);
+  margin-bottom: var(--sp-3);
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: var(--fw-medium);
+}
+
+.page-back:hover {
+  color: var(--text);
+}
+
+/* The chevron points forward; flip it for a back affordance, and again under
+   RTL so it still points "back" in Hebrew. */
+.page-back__icon {
+  transform: rotate(180deg);
+}
+
+[dir='rtl'] .page-back__icon {
+  transform: rotate(0deg);
+}
+
+.card {
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-sm);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -83,8 +132,8 @@ img {
   }
 }
 
-/* RTL support. `dir` is set on <html> by LanguageContext, so these apply
-   document-wide including to native controls. */
+/* RTL. `dir` is set on <html> by LanguageContext, so this applies document-wide
+   including to native controls. */
 [dir='rtl'] {
   text-align: right;
 }
