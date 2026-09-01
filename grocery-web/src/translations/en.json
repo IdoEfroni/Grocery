@@ -144,7 +144,15 @@
       "camera": "Taken with the camera",
       "web": "Found online",
       "url": "From a link"
-    }
+    },
+    "findOnline": "Find online",
+    "noImageFoundOnline": "No photo found in the product databases for this barcode.",
+    "searchInBrowser": "Search on Google",
+    "pasteImage": "Paste image",
+    "searchThenPasteHelp": "Opens in your browser. Long-press an image, copy it, come back and tap Paste image.",
+    "searchThenSaveHelp": "Opens in your browser. Save an image to your photos, then use Upload.",
+    "clipboardEmpty": "No image on the clipboard. Copy an image first, then tap Paste image.",
+    "clipboardDenied": "Could not read the clipboard. Allow clipboard access, or save the image and use Upload."
   },
   "productDetails": {
     "updateProduct": "Update Product",

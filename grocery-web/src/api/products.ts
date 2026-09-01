@@ -75,6 +75,14 @@ export function comparePrices(
   return http(`/api/products/compare-prices?${q}`, options)
 }
 
+/**
+ * @deprecated The API backs this with a DuckDuckGo image scrape that no longer
+ * works -- DuckDuckGo returns 403 to non-browser clients, so it fails on every
+ * call after several seconds. Product photos now come from
+ * `findProductImageByBarcode` in `./productImage`, which queries Open Food
+ * Facts directly from the browser. Kept only so the endpoint is not silently
+ * forgotten; delete it along with DuckDuckGoImageService in the API.
+ */
 export function searchImageBySku(sku: string, options: RequestOptions = {}) {
   return httpBlob(`/api/products/Web-photo-by-sku/${encodeURIComponent(sku)}`, options)
 }

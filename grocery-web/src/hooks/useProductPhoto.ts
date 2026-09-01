@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { searchImageBySku } from '../api/products'
+import { findProductImageByBarcode, readImageFromClipboard } from '../api/productImage'
 
 export type PhotoOrigin = 'upload' | 'camera' | 'web'
 
@@ -14,8 +14,11 @@ export interface UseProductPhotoResult {
   setUrl: (url: string) => void
   clear: () => void
   searchOnline: (sku: string) => Promise<void>
+  pasteFromClipboard: () => Promise<void>
   isSearching: boolean
   searchError: string | null
+  /** True after a lookup that completed but found nothing. Not a failure. */
+  notFound: boolean
   /** The file/url pair to send to the API. */
   toUpsertFields: () => { photoFile: File | null; photoUrl: string | null }
 }
@@ -33,6 +36,7 @@ export function useProductPhoto(): UseProductPhotoResult {
   const [photo, setPhoto] = useState<PhotoSelection>({ kind: 'none' })
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
+  const [notFound, setNotFound] = useState(false)
 
   // Object URLs must be revoked exactly once, and only after nothing renders
   // them. Tracking the live one in a ref keeps that independent of render.
@@ -59,6 +63,7 @@ export function useProductPhoto(): UseProductPhotoResult {
       const url = previewUrl ?? URL.createObjectURL(file)
       objectUrlRef.current = url
       setSearchError(null)
+      setNotFound(false)
       setPhoto({ kind: 'file', file, previewUrl: url, origin })
     },
     [releaseObjectUrl],
@@ -68,6 +73,7 @@ export function useProductPhoto(): UseProductPhotoResult {
     (url: string) => {
       releaseObjectUrl()
       setSearchError(null)
+      setNotFound(false)
       setPhoto(url.trim() ? { kind: 'url', url: url.trim() } : { kind: 'none' })
     },
     [releaseObjectUrl],
@@ -76,6 +82,7 @@ export function useProductPhoto(): UseProductPhotoResult {
   const clear = useCallback(() => {
     releaseObjectUrl()
     setSearchError(null)
+    setNotFound(false)
     setPhoto({ kind: 'none' })
   }, [releaseObjectUrl])
 
@@ -89,13 +96,19 @@ export function useProductPhoto(): UseProductPhotoResult {
 
       setIsSearching(true)
       setSearchError(null)
+      setNotFound(false)
       try {
-        const { blob, contentType } = await searchImageBySku(sku, { signal: controller.signal })
+        const found = await findProductImageByBarcode(sku, { signal: controller.signal })
         if (controller.signal.aborted) return
 
-        const extension = contentType.split('/')[1] || 'jpg'
-        const file = new File([blob], `image-${sku}.${extension}`, { type: contentType })
-        setFile(file, 'web')
+        if (found) {
+          setFile(found.file, 'web', found.previewUrl)
+        } else {
+          // Coverage of Israeli barcodes is thin, so this is the common path.
+          // It is reported as "nothing found", not as an error, because the
+          // next step is simply to search by hand or take a photo.
+          setNotFound(true)
+        }
       } catch (err) {
         if (controller.signal.aborted) return
         setSearchError(err instanceof Error ? err.message : String(err))
@@ -108,6 +121,21 @@ export function useProductPhoto(): UseProductPhotoResult {
     },
     [setFile],
   )
+
+  const pasteFromClipboard = useCallback(async () => {
+    setSearchError(null)
+    try {
+      const file = await readImageFromClipboard()
+      if (file) {
+        setFile(file, 'web')
+      } else {
+        setSearchError('clipboard-empty')
+      }
+    } catch {
+      // Denied permission or an unsupported browser both land here.
+      setSearchError('clipboard-denied')
+    }
+  }, [setFile])
 
   const toUpsertFields = useCallback(() => {
     if (photo.kind === 'file') return { photoFile: photo.file, photoUrl: null }
@@ -124,10 +152,12 @@ export function useProductPhoto(): UseProductPhotoResult {
       setUrl,
       clear,
       searchOnline,
+      pasteFromClipboard,
       isSearching,
       searchError,
+      notFound,
       toUpsertFields,
     }),
-    [photo, setFile, setUrl, clear, searchOnline, isSearching, searchError, toUpsertFields],
+    [photo, setFile, setUrl, clear, searchOnline, pasteFromClipboard, isSearching, searchError, notFound, toUpsertFields],
   )
 }

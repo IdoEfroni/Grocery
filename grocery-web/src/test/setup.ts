@@ -28,3 +28,10 @@ if (!window.matchMedia) {
     dispatchEvent: () => false,
   })) as unknown as typeof window.matchMedia
 }
+
+// jsdom implements neither, and any code path that stages a file preview
+// needs them.
+if (typeof URL.createObjectURL !== 'function') {
+  URL.createObjectURL = () => `blob:test/${Math.random().toString(36).slice(2)}`
+  URL.revokeObjectURL = () => {}
+}

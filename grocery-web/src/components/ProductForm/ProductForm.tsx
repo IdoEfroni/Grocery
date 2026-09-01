@@ -227,21 +227,6 @@ export default function ProductForm({
             t('createPage.fillAutomatically')
           )}
         </Button>
-        <Button
-          type="button"
-          variant="outline-secondary"
-          onClick={() => void photo.searchOnline(values.sku)}
-          disabled={!skuReady || photo.isSearching}
-        >
-          {photo.isSearching ? (
-            <>
-              <Spinner animation="border" size="sm" className="me-2" />
-              {t('createPage.searching')}
-            </>
-          ) : (
-            t('createPage.searchImageFromWeb')
-          )}
-        </Button>
       </div>
 
       {autoFillNote && (
@@ -294,6 +279,8 @@ export default function ProductForm({
         photo={photo}
         onOpenCamera={() => setShowCamera(true)}
         currentPhotoUrl={currentPhotoUrl}
+        sku={values.sku}
+        productName={values.name}
       />
 
       {submitError && (
