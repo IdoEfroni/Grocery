@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { buildImageSearchUrl, findProductImageByBarcode } from './productImage'
+import { buildImageSearchUrl, diagnosePhotoUrl, findProductImageByBarcode } from './productImage'
 
 function offHit(name: string, imageUrl: string) {
   return new Response(JSON.stringify({ status: 1, product: { product_name: name, image_front_url: imageUrl } }), {
@@ -96,5 +96,32 @@ describe('buildImageSearchUrl', () => {
 
   it('works with the barcode alone', () => {
     expect(decodeURIComponent(buildImageSearchUrl('7290102396665'))).toContain('7290102396665')
+  })
+})
+
+describe('diagnosePhotoUrl', () => {
+  it('flags the Google search page people actually paste', () => {
+    // The exact shape that produced a 400 on save: the results page address,
+    // copied instead of the image address.
+    const pasted =
+      'https://www.google.com/search?q=%D7%92%D7%91%D7%99%D7%A0%D7%94+7290011499129&udm=2#sv=CAMSWRoy'
+    expect(diagnosePhotoUrl(pasted)).toBe('search-page')
+  })
+
+  it('flags other search engines too', () => {
+    expect(diagnosePhotoUrl('https://www.bing.com/images/search?q=milk')).toBe('search-page')
+    expect(diagnosePhotoUrl('https://duckduckgo.com/?q=milk&iax=images')).toBe('search-page')
+  })
+
+  it('allows a real image address', () => {
+    expect(diagnosePhotoUrl('https://images.openfoodfacts.org/images/products/front_he.5.400.jpg')).toBeNull()
+    // Plenty of legitimate image URLs carry no file extension, so the check
+    // must not demand one.
+    expect(diagnosePhotoUrl('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9Gc')).toBeNull()
+  })
+
+  it('ignores an empty field', () => {
+    expect(diagnosePhotoUrl('')).toBeNull()
+    expect(diagnosePhotoUrl('   ')).toBeNull()
   })
 })

@@ -124,6 +124,35 @@ export function buildImageSearchUrl(barcode: string, productName?: string | null
   return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(parts.join(' '))}`
 }
 
+/**
+ * Hosts whose pages people naturally copy the address of while looking for a
+ * picture. The address of a results page is an HTML document, so the API
+ * rightly refuses it -- but the failure only surfaced on save, as a 400.
+ */
+const SEARCH_PAGE_PATTERNS = [
+  /^https?:\/\/(www\.)?google\.[a-z.]+\/search/i,
+  /^https?:\/\/(www\.)?bing\.com\/(images|search)/i,
+  /^https?:\/\/duckduckgo\.com\/\?/i,
+  /^https?:\/\/(www\.)?images\.google\./i,
+  /^https?:\/\/(www\.)?ecosia\.org\/images/i,
+  /^https?:\/\/(www\.)?yandex\.[a-z.]+\/images/i,
+]
+
+export type PhotoUrlIssue = 'search-page' | null
+
+/**
+ * Spot a URL that cannot possibly be a photo, before it is submitted.
+ *
+ * Deliberately narrow: it only flags search-results pages, which are
+ * unmistakable. Guessing more broadly -- say, requiring a file extension --
+ * would reject plenty of legitimate image URLs that carry none.
+ */
+export function diagnosePhotoUrl(url: string): PhotoUrlIssue {
+  const trimmed = url.trim()
+  if (!trimmed) return null
+  return SEARCH_PAGE_PATTERNS.some((p) => p.test(trimmed)) ? 'search-page' : null
+}
+
 /** Whether this browser can read images out of the clipboard. */
 export function canReadClipboardImages(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.clipboard?.read === 'function'

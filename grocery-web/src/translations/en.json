@@ -149,10 +149,13 @@
     "noImageFoundOnline": "No photo found in the product databases for this barcode.",
     "searchInBrowser": "Search on Google",
     "pasteImage": "Paste image",
-    "searchThenPasteHelp": "Opens in your browser. Long-press an image, copy it, come back and tap Paste image.",
-    "searchThenSaveHelp": "Opens in your browser. Save an image to your photos, then use Upload.",
+    "searchThenPasteHelp": "Opens in your browser. Long-press the picture itself (not the page) and choose \"Copy image\", then come back and tap Paste image. \"Copy image address\" also works — paste it under Link.",
+    "searchThenSaveHelp": "Opens in your browser. Long-press the picture itself and either save it to your photos and use Camera roll, or choose \"Copy image address\" and paste it under Link. Copying the page address will not work.",
     "clipboardEmpty": "No image on the clipboard. Copy an image first, then tap Paste image.",
-    "clipboardDenied": "Could not read the clipboard. Allow clipboard access, or save the image and use Upload."
+    "clipboardDenied": "Could not read the clipboard. Allow clipboard access, or save the image and use Upload.",
+    "urlIsSearchPage": "That is a search page, not an image.",
+    "urlIsSearchPageHelp": "Long-press the picture itself in the results and choose \"Copy image address\", then paste that here.",
+    "urlNotAnImage": "That link did not load as an image. Long-press the picture and choose \"Copy image address\" rather than copying the page address."
   },
   "productDetails": {
     "updateProduct": "Update Product",

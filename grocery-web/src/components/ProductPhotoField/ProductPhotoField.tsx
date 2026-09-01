@@ -2,7 +2,7 @@ import { useId, useRef, useState } from 'react'
 import { Alert, Button, Form, Image, Spinner } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
 import Icon from '../Icon/Icon'
-import { buildImageSearchUrl, canReadClipboardImages } from '../../api/productImage'
+import { buildImageSearchUrl, canReadClipboardImages, diagnosePhotoUrl } from '../../api/productImage'
 import type { UseProductPhotoResult } from '../../hooks/useProductPhoto'
 import './ProductPhotoField.css'
 
@@ -39,6 +39,10 @@ export default function ProductPhotoField({
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [showUrlInput, setShowUrlInput] = useState(false)
   const [urlDraft, setUrlDraft] = useState('')
+  // A link can fail two ways: it is obviously a search page, or it simply does
+  // not load as an image. Both are caught here rather than as a 400 on save.
+  const urlIssue = diagnosePhotoUrl(urlDraft)
+  const [urlBroken, setUrlBroken] = useState(false)
   const urlFieldId = useId()
 
   const skuReady = Boolean(sku?.trim())
@@ -124,14 +128,35 @@ export default function ProductPhotoField({
             type="url"
             inputMode="url"
             value={urlDraft}
+            isInvalid={Boolean(urlIssue)}
             placeholder={t('createPage.photoUrlPlaceholder')}
-            onChange={(e) => setUrlDraft(e.target.value)}
-            onBlur={() => photo.setUrl(urlDraft)}
+            onChange={(e) => {
+              setUrlDraft(e.target.value)
+              setUrlBroken(false)
+            }}
+            onBlur={() => !urlIssue && photo.setUrl(urlDraft)}
           />
-          <Button type="button" variant="outline-primary" onClick={() => photo.setUrl(urlDraft)}>
+          <Button
+            type="button"
+            variant="outline-primary"
+            disabled={Boolean(urlIssue)}
+            onClick={() => photo.setUrl(urlDraft)}
+          >
             {t('common.preview')}
           </Button>
         </div>
+      )}
+
+      {urlIssue === 'search-page' && (
+        <Alert variant="warning" className="mt-2 mb-0">
+          <strong>{t('createPage.urlIsSearchPage')}</strong> {t('createPage.urlIsSearchPageHelp')}
+        </Alert>
+      )}
+
+      {urlBroken && (
+        <Alert variant="warning" className="mt-2 mb-0">
+          {t('createPage.urlNotAnImage')}
+        </Alert>
       )}
 
       {/* The semi-automatic path: the search happens in the phone's own
@@ -173,7 +198,16 @@ export default function ProductPhotoField({
 
       {previewSrc && (
         <figure className="product-photo-field__preview">
-          <Image src={previewSrc} alt={t('createPage.imagePreview')} fluid rounded />
+          <Image
+            src={previewSrc}
+            alt={t('createPage.imagePreview')}
+            fluid
+            rounded
+            onError={() => {
+              if (photo.photo.kind === 'url') setUrlBroken(true)
+            }}
+            onLoad={() => setUrlBroken(false)}
+          />
           <figcaption>
             {originLabel ? (
               <span className="text-muted small">{originLabel}</span>
