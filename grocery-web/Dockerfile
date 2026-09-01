@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-ARG VITE_API_BASE_URL=https://grocery-api.greenground-eb70f213.eastasia.azurecontainerapps.io
+ARG VITE_API_BASE_URL=https://grocery-api.agreeablesea-ea438f57.uaenorth.azurecontainerapps.io
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 

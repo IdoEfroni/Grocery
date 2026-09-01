@@ -17,7 +17,7 @@ concurrency:
 
 env:
   REGISTRY: groceryregistryef.azurecr.io
-  RESOURCE_GROUP: rg-grocery-dev
+  RESOURCE_GROUP: rg-grocery-uae
 
 jobs:
   deploy:

@@ -11,7 +11,7 @@ Set-Location $rootDir
 $acr = "groceryregistryef"
 $image = "grocery-api"
 $tag = "latest"
-$rg = "rg-grocery-dev"
+$rg = "rg-grocery-uae"
 $app = "grocery-api"
 $dockerfilePath = "Grocery.Api\Dockerfile"
 $buildContext = "."

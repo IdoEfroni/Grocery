@@ -16,7 +16,7 @@ $image = "grocery-web"
 # old container keeps serving while the new image sits unused in ACR.
 $tag = Get-Date -Format "yyyyMMdd-HHmmss"
 $latestTag = "latest"
-$rg = "rg-grocery-dev"
+$rg = "rg-grocery-uae"
 $app = "grocery-web"
 $dockerfilePath = "grocery-web\Dockerfile"
 $buildContext = "grocery-web"
