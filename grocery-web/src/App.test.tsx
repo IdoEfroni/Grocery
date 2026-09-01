@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { LanguageProvider } from './contexts/LanguageContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import App from './App.jsx'
 import * as products from './api/products'
 
@@ -17,11 +18,13 @@ const PRODUCT: products.Product = {
 
 function renderAt(path: string) {
   return render(
-    <LanguageProvider>
-      <MemoryRouter initialEntries={[path]}>
-        <App />
-      </MemoryRouter>
-    </LanguageProvider>,
+    <ThemeProvider>
+      <LanguageProvider>
+        <MemoryRouter initialEntries={[path]}>
+          <App />
+        </MemoryRouter>
+      </LanguageProvider>
+    </ThemeProvider>,
   )
 }
 

@@ -56,7 +56,12 @@
     "pageSettings": "Page Settings",
     "regionAndLanguage": "Region and Language",
     "israelHebrew": "Israel (Hebrew)",
-    "unitedStatesEnglish": "United States (English)"
+    "unitedStatesEnglish": "United States (English)",
+    "appearance": "Appearance",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeFollowingSystem": "Following your device: {mode}."
   },
   "browsePage": {
     "scanOrEnterBarcode": "Scan or enter barcode to find a product.",

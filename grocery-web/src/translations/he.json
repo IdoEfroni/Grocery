@@ -56,7 +56,12 @@
     "pageSettings": "הגדרות דף",
     "regionAndLanguage": "אזור ושפה",
     "israelHebrew": "ישראל (עברית)",
-    "unitedStatesEnglish": "United States (English)"
+    "unitedStatesEnglish": "United States (English)",
+    "appearance": "מראה",
+    "themeSystem": "מערכת",
+    "themeLight": "בהיר",
+    "themeDark": "כהה",
+    "themeFollowingSystem": "עוקב אחר המכשיר: {mode}."
   },
   "browsePage": {
     "scanOrEnterBarcode": "סרוק או הזן ברקוד כדי למצוא מוצר.",
