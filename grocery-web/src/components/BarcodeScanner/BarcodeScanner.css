@@ -148,3 +148,63 @@
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.35);
 }
+
+/* Confirmation step. The decoded number is deliberately the largest thing on
+   the screen: the whole point is that a person reads it and compares it with
+   the label in their hand before anything acts on it. */
+.barcode-scanner__confirm {
+  text-align: center;
+  padding: var(--sp-3) 0;
+}
+
+.barcode-scanner__confirm-label {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 var(--sp-1);
+}
+
+.barcode-scanner__confirm-value {
+  font-size: clamp(1.75rem, 8vw, 2.5rem);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  margin: 0 0 var(--sp-1);
+  overflow-wrap: anywhere;
+}
+
+.barcode-scanner__confirm-format {
+  font-size: var(--fs-sm);
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 var(--sp-4);
+}
+
+.barcode-scanner__confirm-warn {
+  color: #ffca6b;
+}
+
+.barcode-scanner__confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.barcode-scanner__confirm-actions .btn {
+  min-height: var(--touch-target-min);
+}
+
+.barcode-scanner__confirm-actions .btn-lg {
+  min-height: var(--touch-target-lg);
+  font-weight: var(--fw-semibold);
+}
+
+@media (min-width: 576px) {
+  .barcode-scanner__confirm-actions {
+    flex-direction: row-reverse;
+    justify-content: center;
+  }
+  .barcode-scanner__confirm-actions .btn-lg {
+    flex: 0 1 18rem;
+  }
+}

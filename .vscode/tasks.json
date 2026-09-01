@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["build", "${workspaceFolder}/Grocery.Api/Grocery.Api.csproj"],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      // Background task: launch.json waits for Vite's "ready in" line before
+      // pointing the browser at it, so the page is never opened too early.
+      "label": "start-vite",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}/grocery-web" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^$", "file": 1, "location": 2, "message": 3 },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE",
+          "endsPattern": "ready in"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "stop-vite",
+      "type": "shell",
+      "command": "echo Vite left running; close its terminal to stop it.",
+      "presentation": { "reveal": "never" }
+    },
+    {
+      "label": "test-web",
+      "type": "shell",
+      "command": "npm run test",
+      "options": { "cwd": "${workspaceFolder}/grocery-web" },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

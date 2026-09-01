@@ -100,7 +100,9 @@
     "orEnterManually": "או הזן את הברקוד ידנית",
     "scanForPrice": "סרוק לבדיקת מחיר",
     "noBarcodeQuestion": "אין ברקוד על הפריט?",
-    "searchByName": "חפש לפי שם"
+    "searchByName": "חפש לפי שם",
+    "rescan": "סרוק שוב",
+    "noChecksumWarning": "- ללא ספרת ביקורת, יש לוודא בקפידה"
   },
   "createPage": {
     "nameLabel": "שם *",

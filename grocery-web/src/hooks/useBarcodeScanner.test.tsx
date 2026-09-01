@@ -36,8 +36,14 @@ class FakeBarcodeDetector {
   detect = vi.fn(async () => detectResult)
 }
 
-function Harness({ active, onScan }: { active: boolean; onScan: (v: string) => void }) {
-  const { videoRef, status } = useBarcodeScanner({ active, onScan })
+function Harness({
+  active,
+  onScan,
+}: {
+  active: boolean
+  onScan: (v: string, f: string) => void
+}) {
+  const { videoRef, status, resume } = useBarcodeScanner({ active, onScan })
 
   // jsdom videos never report dimensions or readyState on their own.
   useEffect(() => {
@@ -51,6 +57,9 @@ function Harness({ active, onScan }: { active: boolean; onScan: (v: string) => v
   return (
     <div>
       <span data-testid="status">{status}</span>
+      <button type="button" data-testid="resume" onClick={resume}>
+        resume
+      </button>
       {active && <video ref={videoRef} />}
     </div>
   )
@@ -139,7 +148,7 @@ describe('useBarcodeScanner', () => {
     detectResult = [{ rawValue: '7290000066318', format: 'ean_13' }]
 
     const { getByTestId, rerender } = render(<Harness active onScan={onScan} />)
-    await waitFor(() => expect(onScan).toHaveBeenCalledWith('7290000066318'))
+    await waitFor(() => expect(onScan).toHaveBeenCalledWith('7290000066318', 'ean_13'))
 
     rerender(<Harness active={false} onScan={onScan} />)
     await waitFor(() => expect(getByTestId('status')).toHaveTextContent('idle'))
@@ -149,7 +158,29 @@ describe('useBarcodeScanner', () => {
 
     rerender(<Harness active onScan={onScan} />)
     await waitFor(() => expect(getByTestId('status')).toHaveTextContent('scanning'))
-    await waitFor(() => expect(onScan).toHaveBeenCalledWith('7290000012345'))
+    await waitFor(() => expect(onScan).toHaveBeenCalledWith('7290000012345', 'ean_13'))
+  })
+
+  it('resumes decoding after a hit without restarting the camera', async () => {
+    // Backs the confirm-then-use step: rejecting a suspect read has to return
+    // to scanning immediately, not tear the camera down and back up.
+    const onScan = vi.fn()
+    detectResult = [{ rawValue: '7290000066318', format: 'ean_13' }]
+
+    const { getByTestId } = render(<Harness active onScan={onScan} />)
+    await waitFor(() => expect(onScan).toHaveBeenCalledTimes(1))
+
+    const streamsBefore = tracks.length
+    detectResult = [{ rawValue: '7290000099999', format: 'ean_13' }]
+
+    act(() => {
+      getByTestId('resume').click()
+    })
+
+    await waitFor(() => expect(onScan).toHaveBeenCalledWith('7290000099999', 'ean_13'))
+    // Same stream throughout: no new getUserMedia, so no camera restart.
+    expect(tracks.length).toBe(streamsBefore)
+    expect(tracks.every((t) => !t.stopped)).toBe(true)
   })
 
   it('reports a scan only once per activation', async () => {

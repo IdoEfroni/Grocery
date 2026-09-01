@@ -162,12 +162,13 @@ function classifyError(err: unknown): ScannerError {
 export async function detectBarcodeFromImageFile(
   file: File,
   formats: BarcodeFormat[] = RETAIL_FORMATS,
-): Promise<string | null> {
+): Promise<{ value: string; format: string } | null> {
   const { detector } = await loadDetector(formats)
   const bitmap = await createImageBitmap(file)
   try {
     const results = await detector.detect(bitmap)
-    return results.find((r) => r.rawValue?.trim())?.rawValue.trim() ?? null
+    const hit = results.find((r) => r.rawValue?.trim())
+    return hit ? { value: hit.rawValue.trim(), format: hit.format } : null
   } finally {
     bitmap.close()
   }
@@ -176,7 +177,8 @@ export async function detectBarcodeFromImageFile(
 export interface UseBarcodeScannerOptions {
   /** Start the camera when true; fully release it when false. */
   active: boolean
-  onScan: (value: string) => void
+  /** Called once per accepted decode, with the symbology that produced it. */
+  onScan: (value: string, format: string) => void
   formats?: BarcodeFormat[]
   /** Minimum ms between decode attempts. Frames arrive faster than we need. */
   decodeIntervalMs?: number
@@ -194,6 +196,8 @@ export interface UseBarcodeScannerResult {
   torchOn: boolean
   toggleTorch: () => void
   retry: () => void
+  /** Restart decoding after a hit, without restarting the camera. */
+  resume: () => void
 }
 
 export function useBarcodeScanner({
@@ -229,6 +233,9 @@ export function useBarcodeScanner({
   const decodingRef = useRef(false)
   const lastDecodeRef = useRef(0)
   const doneRef = useRef(false)
+  // Lets resume() restart the decode loop without tearing the camera down
+  // and back up, which would cost about a second per rescan.
+  const scheduleRef = useRef<(() => void) | null>(null)
 
   /**
    * Invalidates in-flight async work. Every `await` in the start path is
@@ -390,6 +397,7 @@ export function useBarcodeScanner({
     }
 
     const scheduleFrame = () => {
+      scheduleRef.current = scheduleFrame
       const video = videoRef.current
       if (!video || isStale()) return
 
@@ -457,7 +465,7 @@ export function useBarcodeScanner({
         const hit = results.find((r) => r.rawValue?.trim())
         if (hit) {
           doneRef.current = true
-          onScanRef.current(hit.rawValue.trim())
+          onScanRef.current(hit.rawValue.trim(), hit.format)
           return
         }
       } catch {
@@ -495,6 +503,11 @@ export function useBarcodeScanner({
     setAttempt((n) => n + 1)
   }, [])
 
+  const resume = useCallback(() => {
+    doneRef.current = false
+    scheduleRef.current?.()
+  }, [])
+
   const retry = useCallback(() => {
     preferredCameraRef.current = null
     setAttempt((n) => n + 1)
@@ -522,5 +535,6 @@ export function useBarcodeScanner({
     torchOn,
     toggleTorch,
     retry,
+    resume,
   }
 }

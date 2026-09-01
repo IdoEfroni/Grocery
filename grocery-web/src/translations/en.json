@@ -100,7 +100,9 @@
     "orEnterManually": "or enter the barcode manually",
     "scanForPrice": "Scan for a price",
     "noBarcodeQuestion": "No barcode on the item?",
-    "searchByName": "Search by name"
+    "searchByName": "Search by name",
+    "rescan": "Scan again",
+    "noChecksumWarning": "- no check digit, please verify carefully"
   },
   "createPage": {
     "nameLabel": "Name *",

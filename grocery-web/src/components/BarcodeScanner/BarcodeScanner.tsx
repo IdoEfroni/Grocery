@@ -16,6 +16,25 @@ export interface BarcodeScannerProps {
   onClose: () => void
 }
 
+/** Human label for a symbology, e.g. ean_13 -> EAN-13. */
+function formatLabel(format: string): string {
+  return format.replace(/_/g, '-').toUpperCase()
+}
+
+/**
+ * EAN/UPC carry a check digit that the decoder verifies, so a corrupt read is
+ * very unlikely to be reported at all. ITF and Code 128 do not, which is where
+ * a bad scan realistically slips through -- worth flagging on the confirm step.
+ */
+function isChecksumProtected(format: string): boolean {
+  return /^(ean_|upc_)/.test(format)
+}
+
+/** Groups digits in threes so a wrong digit is easier to spot. */
+function groupDigits(value: string): string {
+  return /^[0-9]+$/.test(value) ? value.replace(/(.{3})/g, '$1 ').trim() : value
+}
+
 /** Maps a scanner error to a translation key plus whether retrying can help. */
 function errorContent(error: ScannerError): { key: string; retryable: boolean } {
   switch (error.kind) {
@@ -37,18 +56,25 @@ export default function BarcodeScanner({ isOpen, onScan, onClose }: BarcodeScann
   const [aspect, setAspect] = useState<number | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadBusy, setUploadBusy] = useState(false)
+  // A decode is held here for confirmation instead of being acted on straight
+  // away. Cameras do occasionally produce a corrupt read -- ITF and Code 128
+  // carry weak or no checksum -- and acting on one silently means a wrong price
+  // shown to a customer, or a bogus product created.
+  const [pending, setPending] = useState<{ value: string; format: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const handleScan = useCallback(
-    (value: string) => {
-      // Short haptic + the sheet closing are the only success feedback a user
-      // gets while holding a phone at arm's length in a noisy shop.
-      navigator.vibrate?.(60)
-      onScan(value)
-      onClose()
-    },
-    [onScan, onClose],
-  )
+  const stageScan = useCallback((value: string, format: string) => {
+    // Short haptic: the only feedback available while holding a phone at arm's
+    // length in a noisy shop.
+    navigator.vibrate?.(60)
+    setPending({ value, format })
+  }, [])
+
+  const confirmScan = useCallback(() => {
+    if (!pending) return
+    onScan(pending.value)
+    onClose()
+  }, [pending, onScan, onClose])
 
   const {
     videoRef,
@@ -62,13 +88,15 @@ export default function BarcodeScanner({ isOpen, onScan, onClose }: BarcodeScann
     torchOn,
     toggleTorch,
     retry,
-  } = useBarcodeScanner({ active: isOpen, onScan: handleScan })
+    resume,
+  } = useBarcodeScanner({ active: isOpen, onScan: stageScan })
 
   useEffect(() => {
     if (!isOpen) {
       setAspect(null)
       setUploadError(null)
       setUploadBusy(false)
+      setPending(null)
     }
   }, [isOpen])
 
@@ -80,9 +108,9 @@ export default function BarcodeScanner({ isOpen, onScan, onClose }: BarcodeScann
     setUploadBusy(true)
     setUploadError(null)
     try {
-      const value = await detectBarcodeFromImageFile(file)
-      if (value) {
-        handleScan(value)
+      const result = await detectBarcodeFromImageFile(file)
+      if (result) {
+        stageScan(result.value, result.format)
       } else {
         setUploadError(t('browsePage.noBarcodeFound'))
       }
@@ -170,9 +198,44 @@ export default function BarcodeScanner({ isOpen, onScan, onClose }: BarcodeScann
           )}
         </div>
 
-        <p className="barcode-scanner__hint">{t('browsePage.pointAtBarcode')}</p>
+        {pending ? (
+          <div className="barcode-scanner__confirm" role="group" aria-live="polite">
+            <p className="barcode-scanner__confirm-label">{t('browsePage.scannedOutput')}</p>
+            {/* Grouped in threes and forced LTR: a barcode is a number read
+                left-to-right even in a Hebrew interface, and the spacing is
+                what makes a misread digit noticeable. */}
+            <p className="barcode-scanner__confirm-value" dir="ltr">
+              {groupDigits(pending.value)}
+            </p>
+            <p className="barcode-scanner__confirm-format">
+              {formatLabel(pending.format)}
+              {!isChecksumProtected(pending.format) && (
+                <span className="barcode-scanner__confirm-warn">
+                  {' '}
+                  {t('browsePage.noChecksumWarning')}
+                </span>
+              )}
+            </p>
+            <div className="barcode-scanner__confirm-actions">
+              <Button variant="success" size="lg" onClick={confirmScan}>
+                <Icon name="check" /> {t('browsePage.useScannedResult')}
+              </Button>
+              <Button
+                variant="outline-light"
+                onClick={() => {
+                  setPending(null)
+                  resume()
+                }}
+              >
+                {t('browsePage.rescan')}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="barcode-scanner__hint">{t('browsePage.pointAtBarcode')}</p>
+        )}
 
-        <div className="barcode-scanner__controls">
+        <div className="barcode-scanner__controls" hidden={Boolean(pending)}>
           {torchSupported && (
             <Button
               variant={torchOn ? 'warning' : 'outline-light'}
