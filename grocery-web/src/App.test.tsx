@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { ThemeProvider } from './contexts/ThemeContext'
-import App from './App.jsx'
+import App from './App'
 import * as products from './api/products'
 
 const PRODUCT: products.Product = {
@@ -82,6 +82,31 @@ describe('App', () => {
 
     await waitFor(() => expect(screen.getByLabelText(/^name/i)).toBeInTheDocument())
     expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
+  })
+
+  it('exposes every destination without opening a menu', () => {
+    // The regression this guards: navigation used to collapse into a hamburger
+    // on phones, so nothing on screen suggested the other screens existed.
+    renderAt('/')
+    const nav = screen.getByRole('navigation', { name: /main navigation/i })
+    expect(within(nav).getByRole('link', { name: /browse/i })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: /display items/i })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: /create/i })).toBeInTheDocument()
+  })
+
+  it('marks the current destination for assistive tech, not just by colour', () => {
+    renderAt('/view')
+    const nav = screen.getByRole('navigation', { name: /main navigation/i })
+    const current = within(nav).getByRole('link', { name: /display items/i })
+    expect(current).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('does not mark Browse as current on another screen', () => {
+    // '/' is a prefix of every route, so without an exact match Browse would
+    // stay highlighted everywhere.
+    renderAt('/create')
+    const nav = screen.getByRole('navigation', { name: /main navigation/i })
+    expect(within(nav).getByRole('link', { name: /browse/i })).not.toHaveAttribute('aria-current')
   })
 
   it('sets the document language and direction from the provider', async () => {

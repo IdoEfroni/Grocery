@@ -1,0 +1,75 @@
+/* Phone navigation: fixed to the bottom, always visible, inside thumb reach. */
+.bottom-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1030;
+  display: flex;
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border);
+  /* Clears the iPhone home indicator; zero on devices without one. */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.bottom-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  /* Comfortably past the 44px minimum: this is the control people hit most. */
+  min-height: 3.5rem;
+  padding: var(--sp-2) var(--sp-1);
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.bottom-nav__item:hover {
+  color: var(--text);
+}
+
+.bottom-nav__item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Colour alone is not enough to signal the current screen, so the active item
+   also gets a weight change and a bar along its top edge. */
+.bottom-nav__item.is-active {
+  color: var(--accent);
+}
+
+.bottom-nav__item.is-active .bottom-nav__label {
+  font-weight: var(--fw-semibold);
+}
+
+.bottom-nav__item.is-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 2.5rem;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--accent);
+}
+
+.bottom-nav__item {
+  position: relative;
+}
+
+.bottom-nav__label {
+  font-size: var(--fs-xs);
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* From md up the top navbar has room for the same links, so the bar is
+   redundant and would only eat vertical space. */
+@media (min-width: 768px) {
+  .bottom-nav {
+    display: none;
+  }
+}

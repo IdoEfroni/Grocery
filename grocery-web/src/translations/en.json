@@ -28,7 +28,9 @@
   "navigation": {
     "browse": "Browse",
     "create": "Create",
-    "displayItems": "Display items"
+    "displayItems": "Display items",
+    "primary": "Main navigation",
+    "current": "(current screen)"
   },
   "productViewer": {
     "productList": "Product List",

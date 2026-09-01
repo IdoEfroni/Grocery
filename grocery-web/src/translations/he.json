@@ -28,7 +28,9 @@
   "navigation": {
     "browse": "חיפוש מוצר",
     "create": " צור מוצר",
-    "displayItems": "תצוגת מוצרים"
+    "displayItems": "תצוגת מוצרים",
+    "primary": "ניווט ראשי",
+    "current": "(המסך הנוכחי)"
   },
   "productViewer": {
     "productList": "רשימת מוצרים",

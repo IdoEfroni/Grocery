@@ -12,6 +12,8 @@ export type IconName =
   | 'chevron'
   | 'alert'
   | 'settings'
+  | 'home'
+  | 'list'
 
 export interface IconProps {
   name: IconName
@@ -91,6 +93,19 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M12 4 2.5 20h19z" />
       <path d="M12 10v4M12 17.5h.01" />
+    </>
+  ),
+  home: (
+    <>
+      <path d="M3 10.7 12 3.5l9 7.2" />
+      <path d="M5.5 9.6V19a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V9.6" />
+      <path d="M9.75 20.5v-5.25a2.25 2.25 0 0 1 4.5 0v5.25" />
+    </>
+  ),
+  list: (
+    <>
+      <path d="M9 6h11M9 12h11M9 18h11" />
+      <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
     </>
   ),
   settings: (

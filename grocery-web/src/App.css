@@ -72,3 +72,42 @@ body {
     align-items: center;
   }
 }
+
+/* App shell ---------------------------------------------------------------- */
+
+.app-shell__bar {
+  padding-top: max(0.5rem, var(--safe-area-top));
+}
+
+/* The top bar carries the links only where there is room; below md the bottom
+   bar has them, which is why there is no hamburger. */
+.app-shell__links {
+  display: none;
+}
+
+.app-shell__links .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.app-shell__links .nav-link.active {
+  color: #fff;
+  font-weight: var(--fw-semibold);
+}
+
+@media (min-width: 768px) {
+  .app-shell__links {
+    display: flex;
+    flex-direction: row;
+    gap: var(--sp-2);
+  }
+}
+
+/* Leave room for the fixed bottom bar so the last control on a page is never
+   trapped underneath it. */
+@media (max-width: 767.98px) {
+  .app-shell__content {
+    padding-bottom: calc(3.5rem + var(--safe-area-bottom) + var(--sp-4));
+  }
+}
