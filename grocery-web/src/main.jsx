@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { CartProvider } from './contexts/CartContext'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 import App from './App'
 
@@ -15,9 +16,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <ThemeProvider>
         <LanguageProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
+          <CartProvider>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
+          </CartProvider>
         </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>

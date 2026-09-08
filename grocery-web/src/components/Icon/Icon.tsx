@@ -14,6 +14,7 @@ export type IconName =
   | 'settings'
   | 'home'
   | 'list'
+  | 'receipt'
 
 export interface IconProps {
   name: IconName
@@ -106,6 +107,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M9 6h11M9 12h11M9 18h11" />
       <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+    </>
+  ),
+  receipt: (
+    <>
+      <path d="M6 2.5h12v19l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5z" />
+      <path d="M9 8h6M9 12h6" />
     </>
   ),
   settings: (

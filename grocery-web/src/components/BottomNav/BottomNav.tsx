@@ -14,6 +14,7 @@ interface Destination {
 const DESTINATIONS: Destination[] = [
   { to: '/', icon: 'home', labelKey: 'navigation.browse', end: true },
   { to: '/view', icon: 'list', labelKey: 'navigation.displayItems' },
+  { to: '/cart', icon: 'receipt', labelKey: 'navigation.cart' },
   { to: '/create', icon: 'plus', labelKey: 'navigation.create' },
 ]
 

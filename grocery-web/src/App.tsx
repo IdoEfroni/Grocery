@@ -6,6 +6,7 @@ import LanguageToggle from './components/LanguageToggle/LanguageToggle'
 import BottomNav from './components/BottomNav/BottomNav'
 import Icon, { type IconName } from './components/Icon/Icon'
 import BrowsePage from './pages/BrowsePage/BrowsePage'
+import CartPage from './pages/CartPage/CartPage'
 import CreatePage from './pages/CreatePage/CreatePage'
 import LookupPage from './pages/LookupPage/LookupPage'
 import ProductPage from './pages/ProductPage/ProductPage'
@@ -23,6 +24,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/', icon: 'home', labelKey: 'navigation.browse', end: true },
   { to: '/view', icon: 'list', labelKey: 'navigation.displayItems' },
+  { to: '/cart', icon: 'receipt', labelKey: 'navigation.cart' },
   { to: '/create', icon: 'plus', labelKey: 'navigation.create' },
 ]
 
@@ -55,6 +57,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<BrowsePage />} />
           <Route path="/view" element={<ProductViewer />} />
+          <Route path="/cart" element={<CartPage />} />
           <Route path="/create" element={<CreatePage />} />
           {/* Price lookup by barcode -- the primary screen. */}
           <Route path="/lookup/:sku" element={<LookupPage />} />
