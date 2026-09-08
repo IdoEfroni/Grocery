@@ -1,0 +1,59 @@
+.browse-page {
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+/* The scan button is the app's primary action: full width, comfortably above
+   the 44px minimum, and reachable one-handed. */
+.browse-page__scan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-height: 3.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.browse-page__scan-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.browse-page__lede {
+  text-align: center;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 1.5rem;
+}
+
+.browse-page__alt {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.browse-page__divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.875rem;
+}
+
+.browse-page__divider::before,
+.browse-page__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--bs-border-color, #dee2e6);
+}
+
+.browse-page .form-control,
+.browse-page .btn {
+  min-height: var(--touch-target-min, 44px);
+  /* 16px minimum: anything smaller makes iOS Safari zoom the page on focus
+     and never zoom back out. */
+  font-size: 1rem;
+}

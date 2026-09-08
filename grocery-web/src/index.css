@@ -1,11 +1,12 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import './styles/tokens.css';
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Global base. Bootstrap is loaded before this file (see main.jsx), so rules
+   here win at equal specificity without needing !important. */
+
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: var(--lh-normal);
+  font-weight: var(--fw-normal);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,86 +14,200 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html,
+body {
+  margin: 0;
+  /* Matching the body colour stops iOS rubber-band overscroll revealing a
+     differently coloured strip. */
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 100vh;
+  /* dvh, not vh: iOS Safari's 100vh excludes the collapsing URL bar, so a
+     100vh page is taller than the viewport and jumps as the bar hides. */
+  min-height: 100dvh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+@supports not (height: 100dvh) {
+  body {
+    min-height: 100vh;
   }
 }
 
-/* RTL Support */
-[dir="rtl"] {
+/* 16px is the threshold below which iOS Safari zooms on focus and does not
+   zoom back out. Covers Bootstrap's -sm control variants too. */
+input,
+textarea,
+select,
+.form-control,
+.form-select,
+.form-control-sm,
+.form-select-sm {
+  font-size: var(--fs-base);
+}
+
+.btn,
+.form-control,
+.form-select,
+button,
+[role='button'] {
+  min-height: var(--touch-target-min);
+}
+
+.btn-sm {
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn {
+  font-weight: var(--fw-medium);
+}
+
+img {
+  max-width: 100%;
+}
+
+/* Shared page furniture, so every screen frames its content the same way. */
+.page-narrow {
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.page-center {
+  text-align: center;
+  padding: var(--sp-7) 0;
+}
+
+.page-title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  margin: 0 0 var(--sp-5);
+}
+
+.page-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: var(--touch-target-min);
+  margin-bottom: var(--sp-3);
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: var(--fw-medium);
+}
+
+.page-back:hover {
+  color: var(--text);
+}
+
+/* The chevron points forward; flip it for a back affordance, and again under
+   RTL so it still points "back" in Hebrew. */
+.page-back__icon {
+  transform: rotate(180deg);
+}
+
+[dir='rtl'] .page-back__icon {
+  transform: rotate(0deg);
+}
+
+.card {
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* RTL. `dir` is set on <html> by LanguageContext, so this applies document-wide
+   including to native controls. */
+[dir='rtl'] {
   text-align: right;
 }
 
-[dir="rtl"] .actions {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] input,
-[dir="rtl"] textarea {
+[dir='rtl'] input,
+[dir='rtl'] textarea {
   text-align: right;
   direction: rtl;
 }
 
-[dir="rtl"] table th,
-[dir="rtl"] table td {
+[dir='rtl'] table th,
+[dir='rtl'] table td {
   text-align: right;
 }
 
-[dir="rtl"] table th[align="right"],
-[dir="rtl"] table td[align="right"] {
+[dir='rtl'] table th[align='right'],
+[dir='rtl'] table td[align='right'] {
   text-align: left;
 }
 
-[dir="rtl"] table th[align="left"],
-[dir="rtl"] table td[align="left"] {
+[dir='rtl'] table th[align='left'],
+[dir='rtl'] table td[align='left'] {
   text-align: right;
+}
+
+/* ---------------------------------------------------------------------------
+   RTL fixes for Bootstrap input groups.
+
+   Bootstrap ships separate LTR and RTL builds and we load the LTR one, so its
+   physical border-radius and margin-left:-1px rules point the wrong way under
+   <html dir="rtl">: the rounded corners land in the middle of the group and the
+   square ones on the outside, with the 1px overlap seam on the wrong edge.
+
+   Specificity here deliberately exceeds Bootstrap's own :not()-heavy selectors
+   (up to 0,7,0), which is why each rule repeats the :not() chain rather than
+   reaching for !important.
+   --------------------------------------------------------------------------- */
+
+/* 1. Clear the LTR rounding from every control in the group. */
+[dir='rtl']
+  .input-group
+  > :not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback):not(.form-floating) {
+  border-radius: 0;
+}
+
+/* 2. Move the 1px overlap seam to the other side. */
+[dir='rtl']
+  .input-group
+  > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  margin-left: 0;
+  margin-right: -1px;
+}
+
+/* 3. Visual start of the group is the first child, on the right in RTL. */
+[dir='rtl']
+  .input-group
+  > :first-child:not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  border-top-right-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+}
+
+/* 4. Visual end is the last child, on the left in RTL. */
+[dir='rtl']
+  .input-group:not(.has-validation)
+  > :last-child:not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  border-top-left-radius: var(--bs-border-radius);
+  border-bottom-left-radius: var(--bs-border-radius);
+}
+
+/* 5. With validation feedback the DOM's last child is the feedback element, so
+      the visually last control is the one before it. */
+[dir='rtl']
+  .input-group.has-validation
+  > :nth-last-child(2):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  border-top-left-radius: var(--bs-border-radius);
+  border-bottom-left-radius: var(--bs-border-radius);
 }

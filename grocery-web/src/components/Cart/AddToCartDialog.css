@@ -1,0 +1,46 @@
+.add-to-cart__sku {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 var(--sp-1);
+}
+
+.add-to-cart__name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  margin: 0 0 var(--sp-4);
+}
+
+.add-to-cart__notice {
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+}
+
+.add-to-cart__price .form-control,
+.add-to-cart__price .input-group-text {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  min-height: var(--touch-target-lg);
+}
+
+/* Big steppers either side: this runs many times per basket, often one-handed. */
+.add-to-cart__qty {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-2);
+}
+
+.add-to-cart__qty .btn {
+  min-width: 3rem;
+  min-height: var(--touch-target-lg);
+  font-size: var(--fs-lg);
+  line-height: 1;
+}
+
+.add-to-cart__qty .form-control {
+  text-align: center;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  min-height: var(--touch-target-lg);
+}

@@ -11,7 +11,7 @@ Set-Location $rootDir
 $acr = "groceryregistryef"
 $image = "grocery-thumbnail"
 $tag = "latest"
-$rg = "rg-grocery-dev"
+$rg = "rg-grocery-uae"
 $app = "grocery-thumbnail"
 $dockerfilePath = "Grocery.ThumbnailService\Dockerfile"
 $buildContext = "."

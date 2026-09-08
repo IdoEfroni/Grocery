@@ -1,0 +1,57 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Breakpoints in C#: controllers, ProductService, PhotoService, parsers.
+      "name": "API (.NET)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/Grocery.Api/bin/Debug/net8.0/Grocery.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/Grocery.Api",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on: (http[^ ]+)",
+        "uriFormat": "%s/swagger"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:8080"
+      },
+      "sourceFileMap": { "/Views": "${workspaceFolder}/Views" }
+    },
+    {
+      // Breakpoints in .ts/.tsx: hooks, pages, the scanner. Vite source maps
+      // mean you break on your own source, not the bundle.
+      "name": "Web (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/grocery-web",
+      "preLaunchTask": "start-vite",
+      "postDebugTask": "stop-vite",
+      "sourceMapPathOverrides": {
+        "/@fs/*": "/*",
+        "/src/*": "${workspaceFolder}/grocery-web/src/*"
+      }
+    },
+    {
+      // Use when the API is already running (dotnet watch, or another window).
+      "name": "Web only (attach to running Vite)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/grocery-web"
+    }
+  ],
+  "compounds": [
+    {
+      // F5 target: API and frontend together, breakpoints on both sides.
+      "name": "Full stack: API + Web",
+      "configurations": ["API (.NET)", "Web (Chrome)"],
+      "stopAll": true
+    }
+  ]
+}

@@ -28,7 +28,10 @@
   "navigation": {
     "browse": "חיפוש מוצר",
     "create": " צור מוצר",
-    "displayItems": "תצוגת מוצרים"
+    "displayItems": "תצוגת מוצרים",
+    "primary": "ניווט ראשי",
+    "current": "(המסך הנוכחי)",
+    "cart": "חשבון"
   },
   "productViewer": {
     "productList": "רשימת מוצרים",
@@ -42,7 +45,12 @@
     "displaySize": "גודל תצוגה",
     "displaySizeLarge": "גדול (1 בשורה)",
     "displaySizeMedium": "בינוני (2 בשורה)",
-    "displaySizeSmall": "קטן (5 בשורה)"
+    "displaySizeSmall": "קטן (5 בשורה)",
+    "sortPageScopeNote": "ממיין את המוצרים בעמוד זה בלבד.",
+    "deleteProduct": "מחק את {name}",
+    "findAPrice": "חיפוש מחיר",
+    "noMatches": "לא נמצאו תוצאות עבור \"{query}\".",
+    "addNewProduct": "הוסף מוצר חדש"
   },
   "app": {
     "title": "מכולת — מוצרים"
@@ -51,7 +59,12 @@
     "pageSettings": "הגדרות דף",
     "regionAndLanguage": "אזור ושפה",
     "israelHebrew": "ישראל (עברית)",
-    "unitedStatesEnglish": "United States (English)"
+    "unitedStatesEnglish": "United States (English)",
+    "appearance": "מראה",
+    "themeSystem": "מערכת",
+    "themeLight": "בהיר",
+    "themeDark": "כהה",
+    "themeFollowingSystem": "עוקב אחר המכשיר: {mode}."
   },
   "browsePage": {
     "scanOrEnterBarcode": "סרוק או הזן ברקוד כדי למצוא מוצר.",
@@ -85,13 +98,25 @@
     "closePreview": "סגור תצוגה מקדימה",
     "tapToUpdate": "לחץ לעדכון מוצר",
     "noBarcodeFound": "לא נמצא ברקוד בתמונה. נסה תמונה אחרת.",
-    "useScannedResult": "השתמש בברקוד זה"
+    "useScannedResult": "השתמש בברקוד זה",
+    "requiresHttps": "המצלמה דורשת חיבור מאובטח (HTTPS). פתח את האפליקציה דרך HTTPS ונסה שוב.",
+    "tryAgain": "נסה שוב",
+    "torch": "תאורה",
+    "switchCamera": "החלף מצלמה",
+    "pointAtBarcode": "החזק את הברקוד בתוך המסגרת, במרחק של כ-20 ס\"מ.",
+    "takePhotoInstead": "צלם תמונה במקום",
+    "orEnterManually": "או הזן את הברקוד ידנית",
+    "scanForPrice": "סרוק לבדיקת מחיר",
+    "noBarcodeQuestion": "אין ברקוד על הפריט?",
+    "searchByName": "חפש לפי שם",
+    "rescan": "סרוק שוב",
+    "noChecksumWarning": "- ללא ספרת ביקורת, יש לוודא בקפידה"
   },
   "createPage": {
     "nameLabel": "שם *",
     "descriptionLabel": "תיאור",
     "priceLabel": "מחיר *",
-    "skuLabel": "מק\"ט",
+    "skuLabel": "מק\"ט *",
     "skuPlaceholder": "אופציונלי, חייב להיות ייחודי",
     "fillAutomatically": "מלא שדות אוטומטית",
     "photoUploadMode": "מצב העלאת תמונה",
@@ -117,7 +142,28 @@
     "capturePhoto": "צלם תמונה",
     "stopCamera": "עצור מצלמה",
     "startingCamera": "מפעיל מצלמה...",
-    "cameraCaptureTitle": "צילום תמונת מוצר"
+    "cameraCaptureTitle": "צילום תמונת מוצר",
+    "skuRequired": "יש להזין מק\"ט.",
+    "noAutoFillData": "לא נמצאו פרטים באינטרנט עבור ברקוד זה. אנא מלא את השדות ידנית.",
+    "notFoundCreatePrompt": "עדיין לא קיים מוצר עם מק\"ט {sku}. מלא את הפרטים למטה כדי להוסיף אותו.",
+    "removePhoto": "הסר תמונה",
+    "photoFrom": {
+      "upload": "נבחר מהמכשיר",
+      "camera": "צולם במצלמה",
+      "web": "נמצא באינטרנט",
+      "url": "מקישור"
+    },
+    "findOnline": "חפש באינטרנט",
+    "noImageFoundOnline": "לא נמצאה תמונה במאגרי המוצרים עבור ברקוד זה.",
+    "searchInBrowser": "חפש בגוגל",
+    "pasteImage": "הדבק תמונה",
+    "searchThenPasteHelp": "נפתח בדפדפן. לחיצה ארוכה על התמונה עצמה (לא על הדף) ובחר \"העתק תמונה\", חזור והקש על הדבק תמונה. גם \"העתק כתובת תמונה\" עובד — הדבק תחת קישור.",
+    "searchThenSaveHelp": "נפתח בדפדפן. לחיצה ארוכה על התמונה עצמה: שמור אותה לגלריה והשתמש בהעלאה, או בחר \"העתק כתובת תמונה\" והדבק תחת קישור. העתקת כתובת הדף לא תעבוד.",
+    "clipboardEmpty": "אין תמונה בלוח. העתק תמונה תחילה ולאחר מכן הקש על הדבק תמונה.",
+    "clipboardDenied": "לא ניתן לקרוא מהלוח. אשר גישה ללוח, או שמור את התמונה והשתמש בהעלאה.",
+    "urlIsSearchPage": "זהו דף חיפוש, לא תמונה.",
+    "urlIsSearchPageHelp": "לחץ לחיצה ארוכה על התמונה עצמה בתוצאות ובחר \"העתק כתובת תמונה\", והדבק אותה כאן.",
+    "urlNotAnImage": "הקישור לא נטען כתמונה. לחץ לחיצה ארוכה על התמונה ובחר \"העתק כתובת תמונה\" במקום להעתיק את כתובת הדף."
   },
   "productDetails": {
     "updateProduct": "עדכן מוצר",
@@ -134,6 +180,69 @@
     "failedToFetch": "נכשל בטעינת נתוני המוצר: {error}",
     "failedToSearchImage": "נכשל בחיפוש תמונה: {error}",
     "deleteConfirmMessage": "מחק \"{name}\"?"
+  },
+  "lookup": {
+    "priceIs": "מחיר {price}",
+    "scanNext": "סרוק פריט הבא",
+    "editProduct": "ערוך מוצר",
+    "notInSystem": "הפריט אינו קיים במערכת",
+    "addToSystem": "הוסף אותו למערכת",
+    "backToSearch": "חזרה לחיפוש",
+    "checkingMarketPrice": "בודק מחיר התייחסות חיצוני…",
+    "noMarketPrice": "לא נמצא מחיר התייחסות חיצוני עבור ברקוד זה.",
+    "marketAverageLabel": "ממוצע מחירי שוק חיצוני",
+    "notStorePrice": "זהו אינו מחיר החנות.",
+    "confirmBeforeQuoting": "יש לאשר מול אחראי לפני מסירת המחיר ללקוח.",
+    "backToPrice": "חזרה למחיר"
+  },
+  "quickPrice": {
+    "title": "עדכון מחיר",
+    "currentPrice": "מחיר נוכחי:",
+    "newPrice": "מחיר חדש",
+    "savePrice": "שמור מחיר",
+    "editPriceAria": "מחיר {price}. הקש לעדכון."
+  },
+  "cart": {
+    "title": "לעשות חשבון",
+    "scanItem": "סרוק פריט",
+    "empty": "עדיין לא נסרק דבר. הקש על סרוק פריט כדי להתחיל חשבון.",
+    "addTitle": "הוספה לחשבון",
+    "addUnknownTitle": "פריט חדש — קבע מחיר",
+    "addToBill": "הוסף לחשבון",
+    "quantity": "כמות",
+    "quantityHelp": "ניתן להזין שברים עבור סחורה הנמכרת במשקל.",
+    "increase": "הגדל כמות",
+    "decrease": "הקטן כמות",
+    "priceToCharge": "מחיר לחיוב",
+    "namePlaceholder": "מהו הפריט?",
+    "notInSystemNotice": "הברקוד אינו קיים במערכת. קבע מחיר לחיוב כעת, ורשום את המוצר לאחר מכן.",
+    "notInSystemShort": "לא רשום",
+    "fetchingSuggestion": "מחפש מחיר מוצע…",
+    "suggestionSource": "הצעה מהשוואת מחירים חיצונית — אינו מחיר החנות. שנה במידת הצורך.",
+    "noSuggestion": "לא נמצאה הצעה. הזן את המחיר בעצמך.",
+    "discount": "הנחה",
+    "discountTitle": "הנחה",
+    "discountKind": "סוג הנחה",
+    "discountPercent": "אחוז",
+    "discountAmount": "סכום הנחה",
+    "discountLabel": "הנחה",
+    "removeDiscount": "הסר הנחה",
+    "lineTotal": "סה\"כ שורה",
+    "removeLine": "הסר את {name}",
+    "subtotal": "סכום ביניים",
+    "totalDiscount": "סה\"כ הנחה",
+    "total": "סה\"כ",
+    "finalise": "סיום חשבון",
+    "clear": "נקה",
+    "clearConfirm": "לבטל את החשבון וכל מה שנסרק עד כה?",
+    "unregisteredTitle": "{count} פריטים אינם במערכת",
+    "unregisteredHelp": "המחירים שלהם הוזנו כאן. הוסף אותם לקטלוג כדי שהמכירה הבאה תמצא אותם.",
+    "registerNow": "הוסף מוצרים חסרים למערכת",
+    "receiptTitle": "חשבון",
+    "print": "הדפס",
+    "newBill": "חשבון חדש",
+    "backToBill": "חזרה לחשבון",
+    "itemsCount": "{count} פריטים",
+    "thankYou": "תודה"
   }
 }
-

@@ -1,0 +1,21 @@
+# The Dockerfile runs `npm ci` and only then `COPY . .`. Without this file the
+# host's node_modules would be copied straight over the freshly installed ones.
+# On a Windows host that means Windows-native esbuild/rollup binaries landing in
+# a Linux image, and the build fails with a platform mismatch.
+node_modules
+dist
+
+# Build context hygiene -- none of this belongs in the image.
+.git
+.gitignore
+*.log
+npm-debug.log*
+
+# Local-only env files. `.env.production` is intentionally NOT excluded: it
+# supplies VITE_API_BASE_URL for the production build. (The Dockerfile's
+# ARG/ENV still takes precedence over it -- Vite gives pre-existing environment
+# variables higher priority than .env files.)
+.env.development
+.env.device
+.env.local
+.env.*.local

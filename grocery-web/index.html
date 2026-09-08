@@ -1,11 +1,34 @@
 <!doctype html>
-<html lang="en">
+<!-- Hebrew/RTL is the default language, so it is declared here too. Without it
+     there is a flash of LTR layout before LanguageContext syncs these on mount,
+     and native UI (alert/confirm, select pickers, validation bubbles) inherits
+     direction from this element. -->
+<html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <!-- viewport-fit=cover pairs with the env(safe-area-inset-*) usage in the
+         stylesheets. No maximum-scale/user-scalable: pinch zoom stays available. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#212529" />
-    <title>grocery-web</title>
+    <meta name="theme-color" content="#212529" />
+    <meta name="description" content="Scan a barcode to look up or add a product to the store." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Grocery</title>
+    <script>
+      // Apply the saved theme before first paint. Without this, a dark-mode
+      // user gets a white flash while the bundle loads and React mounts.
+      // ThemeProvider takes over from here and keeps the two in step.
+      try {
+        var t = localStorage.getItem('grocery-theme')
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t)
+      } catch (e) {
+        /* private mode: fall back to the system setting */
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

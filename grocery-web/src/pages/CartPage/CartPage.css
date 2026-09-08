@@ -1,0 +1,201 @@
+.cart-page {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  text-align: start;
+}
+
+.cart-page__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.cart-page__clear {
+  color: var(--danger);
+  text-decoration: none;
+  min-height: var(--touch-target-min);
+}
+
+/* Stays put for the whole session: the catalogue gap should be dealt with,
+   not forgotten once the customer has gone. */
+.cart-page__unregistered {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.cart-page__scan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 3.5rem;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  margin-bottom: var(--sp-4);
+}
+
+.cart-page__empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--sp-6) 0;
+}
+
+.cart-page__register-link {
+  text-align: center;
+  margin-top: var(--sp-4);
+}
+
+/* Lines -------------------------------------------------------------------- */
+
+.cart-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+
+.cart-line + .cart-line {
+  border-top: 1px solid var(--border);
+}
+
+.cart-line {
+  padding: var(--sp-3);
+}
+
+.cart-line__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.cart-line__name {
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+}
+
+/* Marks a price typed at the till rather than one from the catalogue. */
+.cart-line__flag {
+  display: inline-block;
+  margin-inline-start: var(--sp-2);
+  padding: 1px var(--sp-2);
+  border-radius: var(--radius-pill);
+  background: var(--warning-subtle);
+  color: var(--warning);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+.cart-line__total {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cart-line__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-line__discount {
+  color: var(--success);
+  font-weight: var(--fw-medium);
+}
+
+.cart-line__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.cart-line__qty {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-inline-end: auto;
+}
+
+.cart-line__qty .btn {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0;
+  font-size: var(--fs-md);
+  line-height: 1;
+}
+
+.cart-line__qty-value {
+  min-width: 2rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-semibold);
+}
+
+.cart-line__remove {
+  color: var(--danger);
+}
+
+/* Summary ------------------------------------------------------------------ */
+
+.cart-summary {
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+.cart-summary__figures {
+  margin: 0 0 var(--sp-4);
+}
+
+.cart-summary__figures > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+}
+
+.cart-summary__figures dt,
+.cart-summary__figures dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-summary__discount {
+  color: var(--success);
+}
+
+/* The number the customer pays: given the weight of a price on the lookup
+   screen, for the same reason. */
+.cart-summary__total {
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
+
+.cart-summary__finish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 3.5rem;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+}

@@ -1,17 +1,28 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { LanguageProvider } from './contexts/LanguageContext'
-import App from './App.jsx'
+// Bootstrap first, then our own styles, so app CSS wins the cascade at equal
+// specificity. The previous order forced !important overrides in App.css.
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
+import { LanguageProvider } from './contexts/LanguageContext'
+import { ThemeProvider } from './contexts/ThemeContext'
+import { CartProvider } from './contexts/CartContext'
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
+import App from './App'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <LanguageProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LanguageProvider>
+          <CartProvider>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
+          </CartProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 )

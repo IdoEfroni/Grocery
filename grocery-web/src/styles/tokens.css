@@ -1,0 +1,178 @@
+/**
+ * Design tokens.
+ *
+ * The app is used one-handed, on a phone, often in poor aisle lighting and
+ * sometimes at arm's length. So the scale is larger and the contrast higher
+ * than a desktop tool would need, and nothing decorative competes with the
+ * numbers people came to read.
+ *
+ * Layered over Bootstrap rather than replacing it: these feed Bootstrap's own
+ * --bs-* variables where possible, so components restyle without every
+ * template changing.
+ */
+
+:root {
+  /* Type scale, 1.25 ratio from a 16px base. 16px is also the minimum that
+     avoids iOS zoom-on-focus, so it is the floor for anything interactive. */
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  /* Prices scale with the viewport so a long value still fits a 320px phone. */
+  --fs-price: clamp(3rem, 18vw, 5rem);
+  --fs-price-sm: clamp(1.375rem, 6vw, 1.75rem);
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.5;
+
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+
+  /* Spacing, 4px base. */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
+  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.06);
+  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+
+  --touch-target-min: 44px;
+  --touch-target-lg: 56px;
+
+  --content-max: 32rem;
+  --content-max-wide: 64rem;
+
+  /* Surfaces and text. Defined here in full so the dark block below only has
+     to override, never introduce. */
+  --surface: #ffffff;
+  --surface-sunken: #f5f6f8;
+  --surface-raised: #ffffff;
+  --border: #e3e6ea;
+  --border-strong: #cbd2d9;
+
+  --text: #16191d;
+  --text-muted: #5f6b76;
+  --text-inverse: #ffffff;
+
+  --accent: #0d6efd;
+  --accent-hover: #0b5ed7;
+  --accent-subtle: #e7f0ff;
+
+  --danger: #c62828;
+  --danger-subtle: #fdecec;
+  --warning: #8a5a00;
+  --warning-subtle: #fff4e0;
+  --success: #1b6b3a;
+  --success-subtle: #e7f5ec;
+
+  color-scheme: light dark;
+}
+
+/* Dark mode. The app is used in cold rooms and dim aisles, and a phone on
+   auto-brightness in dark mode should not flash a white slab.
+
+   Three rules, in this order, so an explicit choice always wins:
+
+     1. :root above          -- light, the default
+     2. the media query      -- system dark, UNLESS the user picked light
+     3. [data-theme='dark']  -- the user picked dark, whatever the system says
+
+   ThemeContext sets data-theme for an explicit choice and removes it for
+   'system', so the media query is the only thing deciding in that case.
+
+   Only tokens are redefined here; no component needs its own dark rules. The
+   palette is repeated because plain CSS cannot share a declaration block
+   between a media query and a bare selector. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --surface: #16181c;
+    --surface-sunken: #101216;
+    --surface-raised: #1e2126;
+    --border: #2c3138;
+    --border-strong: #3d444d;
+
+    --text: #f2f4f7;
+    --text-muted: #a5aeb8;
+    --text-inverse: #16181c;
+
+    --accent: #5c9dff;
+    --accent-hover: #7db0ff;
+    --accent-subtle: #17263d;
+
+    --danger: #ff8a80;
+    --danger-subtle: #3a1d1d;
+    --warning: #ffca6b;
+    --warning-subtle: #3a2c12;
+    --success: #7ddb9f;
+    --success-subtle: #14301f;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 12px 16px -4px rgba(0, 0, 0, 0.5);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+    --surface: #16181c;
+    --surface-sunken: #101216;
+    --surface-raised: #1e2126;
+    --border: #2c3138;
+    --border-strong: #3d444d;
+
+    --text: #f2f4f7;
+    --text-muted: #a5aeb8;
+    --text-inverse: #16181c;
+
+    --accent: #5c9dff;
+    --accent-hover: #7db0ff;
+    --accent-subtle: #17263d;
+
+    --danger: #ff8a80;
+    --danger-subtle: #3a1d1d;
+    --warning: #ffca6b;
+    --warning-subtle: #3a2c12;
+    --success: #7ddb9f;
+    --success-subtle: #14301f;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 12px 16px -4px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+/* Feed Bootstrap's variables so its components follow the tokens instead of
+   being overridden one at a time. */
+:root {
+  --bs-body-bg: var(--surface);
+  --bs-body-color: var(--text);
+  --bs-secondary-color: var(--text-muted);
+  --bs-border-color: var(--border);
+  --bs-tertiary-bg: var(--surface-sunken);
+  --bs-secondary-bg: var(--surface-sunken);
+  --bs-primary: var(--accent);
+  --bs-danger: var(--danger);
+  --bs-border-radius: var(--radius-sm);
+  --bs-border-radius-lg: var(--radius-md);
+}

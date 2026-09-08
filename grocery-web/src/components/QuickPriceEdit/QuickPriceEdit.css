@@ -1,0 +1,35 @@
+.quick-price {
+  text-align: start;
+}
+
+.quick-price__product {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  margin: 0 0 var(--sp-1);
+}
+
+.quick-price__current {
+  color: var(--text-muted);
+  margin: 0 0 var(--sp-4);
+}
+
+.quick-price__label {
+  font-weight: var(--fw-medium);
+  margin-bottom: var(--sp-2);
+}
+
+/* Large enough to read and confirm at a glance while working down a shelf,
+   and comfortably above the 16px iOS zoom threshold. */
+.quick-price__input .form-control {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  min-height: var(--touch-target-lg);
+  text-align: start;
+}
+
+.quick-price__input .input-group-text {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  background: var(--surface-sunken);
+}

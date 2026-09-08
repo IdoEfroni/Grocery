@@ -28,7 +28,10 @@
   "navigation": {
     "browse": "Browse",
     "create": "Create",
-    "displayItems": "Display items"
+    "displayItems": "Display items",
+    "primary": "Main navigation",
+    "current": "(current screen)",
+    "cart": "Bill"
   },
   "productViewer": {
     "productList": "Product List",
@@ -42,7 +45,12 @@
     "displaySize": "Display size",
     "displaySizeLarge": "Large (1 per row)",
     "displaySizeMedium": "Medium (2 per row)",
-    "displaySizeSmall": "Small (5 per row)"
+    "displaySizeSmall": "Small (5 per row)",
+    "sortPageScopeNote": "Sorts the products on this page only.",
+    "deleteProduct": "Delete {name}",
+    "findAPrice": "Find a price",
+    "noMatches": "Nothing found for \"{query}\".",
+    "addNewProduct": "Add a new product"
   },
   "app": {
     "title": "Grocery — Products"
@@ -51,7 +59,12 @@
     "pageSettings": "Page Settings",
     "regionAndLanguage": "Region and Language",
     "israelHebrew": "Israel (Hebrew)",
-    "unitedStatesEnglish": "United States (English)"
+    "unitedStatesEnglish": "United States (English)",
+    "appearance": "Appearance",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeFollowingSystem": "Following your device: {mode}."
   },
   "browsePage": {
     "scanOrEnterBarcode": "Scan or enter barcode to find a product.",
@@ -85,13 +98,25 @@
     "closePreview": "Close Preview",
     "tapToUpdate": "Tap to update product",
     "noBarcodeFound": "No barcode found in image. Try another image.",
-    "useScannedResult": "Use this barcode"
+    "useScannedResult": "Use this barcode",
+    "requiresHttps": "The camera requires a secure (HTTPS) connection. Open this app over HTTPS and try again.",
+    "tryAgain": "Try again",
+    "torch": "Light",
+    "switchCamera": "Switch camera",
+    "pointAtBarcode": "Hold the barcode inside the frame, about 20 cm away.",
+    "takePhotoInstead": "Take a photo instead",
+    "orEnterManually": "or enter the barcode manually",
+    "scanForPrice": "Scan for a price",
+    "noBarcodeQuestion": "No barcode on the item?",
+    "searchByName": "Search by name",
+    "rescan": "Scan again",
+    "noChecksumWarning": "- no check digit, please verify carefully"
   },
   "createPage": {
     "nameLabel": "Name *",
     "descriptionLabel": "Description",
     "priceLabel": "Price *",
-    "skuLabel": "SKU",
+    "skuLabel": "SKU *",
     "skuPlaceholder": "Optional, must be unique",
     "fillAutomatically": "Fill Fields Automatically",
     "photoUploadMode": "Photo Upload Mode",
@@ -117,7 +142,28 @@
     "capturePhoto": "Capture Photo",
     "stopCamera": "Stop Camera",
     "startingCamera": "Starting camera...",
-    "cameraCaptureTitle": "Capture product photo"
+    "cameraCaptureTitle": "Capture product photo",
+    "skuRequired": "SKU is required.",
+    "noAutoFillData": "No details were found online for this barcode. Please fill the fields in manually.",
+    "notFoundCreatePrompt": "No product with SKU {sku} exists yet. Fill in the details below to add it.",
+    "removePhoto": "Remove photo",
+    "photoFrom": {
+      "upload": "Chosen from your device",
+      "camera": "Taken with the camera",
+      "web": "Found online",
+      "url": "From a link"
+    },
+    "findOnline": "Find online",
+    "noImageFoundOnline": "No photo found in the product databases for this barcode.",
+    "searchInBrowser": "Search on Google",
+    "pasteImage": "Paste image",
+    "searchThenPasteHelp": "Opens in your browser. Long-press the picture itself (not the page) and choose \"Copy image\", then come back and tap Paste image. \"Copy image address\" also works — paste it under Link.",
+    "searchThenSaveHelp": "Opens in your browser. Long-press the picture itself and either save it to your photos and use Camera roll, or choose \"Copy image address\" and paste it under Link. Copying the page address will not work.",
+    "clipboardEmpty": "No image on the clipboard. Copy an image first, then tap Paste image.",
+    "clipboardDenied": "Could not read the clipboard. Allow clipboard access, or save the image and use Upload.",
+    "urlIsSearchPage": "That is a search page, not an image.",
+    "urlIsSearchPageHelp": "Long-press the picture itself in the results and choose \"Copy image address\", then paste that here.",
+    "urlNotAnImage": "That link did not load as an image. Long-press the picture and choose \"Copy image address\" rather than copying the page address."
   },
   "productDetails": {
     "updateProduct": "Update Product",
@@ -134,6 +180,69 @@
     "failedToFetch": "Failed to fetch product data: {error}",
     "failedToSearchImage": "Failed to search image: {error}",
     "deleteConfirmMessage": "Delete \"{name}\"?"
+  },
+  "lookup": {
+    "priceIs": "Price {price}",
+    "scanNext": "Scan next item",
+    "editProduct": "Edit product",
+    "notInSystem": "This item is not in the system",
+    "addToSystem": "Add it to the system",
+    "backToSearch": "Back to search",
+    "checkingMarketPrice": "Checking an external price reference…",
+    "noMarketPrice": "No external price reference was found for this barcode.",
+    "marketAverageLabel": "External market average",
+    "notStorePrice": "This is NOT the store price.",
+    "confirmBeforeQuoting": "Confirm with a manager before quoting it to a customer.",
+    "backToPrice": "Back to the price"
+  },
+  "quickPrice": {
+    "title": "Update price",
+    "currentPrice": "Current price:",
+    "newPrice": "New price",
+    "savePrice": "Save price",
+    "editPriceAria": "Price {price}. Tap to update."
+  },
+  "cart": {
+    "title": "Calculate cart",
+    "scanItem": "Scan an item",
+    "empty": "Nothing scanned yet. Tap Scan an item to start a bill.",
+    "addTitle": "Add to bill",
+    "addUnknownTitle": "New item — set a price",
+    "addToBill": "Add to bill",
+    "quantity": "Quantity",
+    "quantityHelp": "Decimals allowed for goods sold by weight.",
+    "increase": "Increase quantity",
+    "decrease": "Decrease quantity",
+    "priceToCharge": "Price to charge",
+    "namePlaceholder": "What is this item?",
+    "notInSystemNotice": "This barcode is not in the system. Set a price to charge now, and register the product afterwards.",
+    "notInSystemShort": "not registered",
+    "fetchingSuggestion": "Looking up a suggested price…",
+    "suggestionSource": "Suggested from an external price comparison — not your shop price. Change it if needed.",
+    "noSuggestion": "No suggestion found. Enter the price yourself.",
+    "discount": "Discount",
+    "discountTitle": "Discount",
+    "discountKind": "Discount type",
+    "discountPercent": "Percent",
+    "discountAmount": "Amount off",
+    "discountLabel": "Discount",
+    "removeDiscount": "Remove discount",
+    "lineTotal": "Line total",
+    "removeLine": "Remove {name}",
+    "subtotal": "Subtotal",
+    "totalDiscount": "Total discount",
+    "total": "Total",
+    "finalise": "Finish bill",
+    "clear": "Clear",
+    "clearConfirm": "Discard this bill and everything scanned so far?",
+    "unregisteredTitle": "{count} item(s) not in the system",
+    "unregisteredHelp": "Their prices were entered here. Add them to the catalogue so the next sale finds them.",
+    "registerNow": "Add missing products to the system",
+    "receiptTitle": "Bill",
+    "print": "Print",
+    "newBill": "New bill",
+    "backToBill": "Back to bill",
+    "itemsCount": "{count} item(s)",
+    "thankYou": "Thank you"
   }
 }
-
