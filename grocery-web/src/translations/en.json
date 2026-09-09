@@ -247,6 +247,7 @@
     "registerNow": "Add missing products to the system",
     "receiptTitle": "Bill",
     "print": "Print",
+    "printHint": "Sized for a 58 mm thermal roll. On a phone, pair the printer over Bluetooth and install its print service first, then pick it in the print dialog.",
     "newBill": "New bill",
     "backToBill": "Back to bill",
     "itemsCount": "{count} item(s)",

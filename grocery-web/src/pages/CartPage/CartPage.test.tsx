@@ -163,4 +163,43 @@ describe('CartPage', () => {
     expect(receipt).toHaveTextContent(/6\.90/)
     expect(screen.getByRole('button', { name: /print/i })).toBeInTheDocument()
   })
+
+  it('sends the bill to the printer and keeps it on screen afterwards', async () => {
+    // jsdom has no print implementation, so window.print is not merely mocked
+    // for assertion -- without this the click throws "not implemented".
+    const print = vi.fn()
+    vi.stubGlobal('print', print)
+
+    vi.spyOn(products, 'getBySku').mockResolvedValue(PRODUCT)
+    setup()
+
+    await userEvent.click(screen.getByRole('button', { name: /scan an item/i }))
+    emitScan!('7290000066318')
+    await screen.findByText('Milk 1L')
+    await userEvent.click(screen.getByRole('button', { name: /add to bill/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /finish bill/i }))
+
+    await userEvent.click(await screen.findByRole('button', { name: /^print$/i }))
+
+    expect(print).toHaveBeenCalledTimes(1)
+
+    // Printing must not dismiss the bill: a jammed roll or a printer the
+    // cashier has not paired yet has to be retryable without rebuilding it.
+    expect(screen.getByRole('dialog')).toHaveTextContent(/6\.90/)
+
+    vi.unstubAllGlobals()
+  })
+
+  it('tells the cashier what the roll needs before they hunt for a setting', async () => {
+    vi.spyOn(products, 'getBySku').mockResolvedValue(PRODUCT)
+    setup()
+
+    await userEvent.click(screen.getByRole('button', { name: /scan an item/i }))
+    emitScan!('7290000066318')
+    await screen.findByText('Milk 1L')
+    await userEvent.click(screen.getByRole('button', { name: /add to bill/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /finish bill/i }))
+
+    expect(await screen.findByText(/58 mm thermal roll/i)).toBeInTheDocument()
+  })
 })

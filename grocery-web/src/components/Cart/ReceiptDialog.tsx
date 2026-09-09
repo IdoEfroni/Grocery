@@ -19,10 +19,23 @@ export interface ReceiptDialogProps {
 /**
  * The finished bill.
  *
- * Laid out as a narrow single column in the proportions of till roll, so the
- * print stylesheet already produces something close to what a 58mm or 80mm
- * thermal printer expects. Printing today goes through the browser; a Bluetooth
- * printer would render the same lines as ESC/POS commands instead.
+ * Laid out as a narrow single column in the proportions of till roll, and the
+ * print stylesheet sizes the page to a 58 mm roll with a 48 mm image, matching
+ * the 384 dots these printers lay down at 203 dpi.
+ *
+ * Printing goes through `window.print()` and the operating system's print
+ * pipeline rather than by driving the printer directly over Bluetooth. That is
+ * a deliberate choice, not a placeholder:
+ *
+ * - The OS path rasterises the page, so **Hebrew prints correctly**. The
+ *   ESC/POS text mode these printers expose carries no Hebrew code page, and
+ *   this shop's receipts are Hebrew by default.
+ * - Web Bluetooth does not exist on iOS Safari, and it cannot see Bluetooth
+ *   Classic SPP at all -- which is what much of this hardware speaks.
+ *
+ * On Android the roll is reached through a print service (RawBT and the like);
+ * on Windows through the vendor driver. Both appear as an ordinary printer in
+ * the system print dialog.
  *
  * Nothing is stored server-side yet -- there is no bills endpoint -- so closing
  * this ends the record of the transaction.
@@ -116,16 +129,19 @@ export default function ReceiptDialog({
         </div>
       </Modal.Body>
 
-      <Modal.Footer className="d-print-none">
-        <Button variant="outline-secondary" onClick={onClose}>
-          {t('cart.backToBill')}
-        </Button>
-        <Button variant="outline-primary" onClick={() => window.print()}>
-          {t('cart.print')}
-        </Button>
-        <Button variant="primary" onClick={onNewBill}>
-          {t('cart.newBill')}
-        </Button>
+      <Modal.Footer className="d-print-none receipt-footer">
+        <p className="receipt-footer__hint">{t('cart.printHint')}</p>
+        <div className="receipt-footer__actions">
+          <Button variant="outline-secondary" onClick={onClose}>
+            {t('cart.backToBill')}
+          </Button>
+          <Button variant="outline-primary" onClick={() => window.print()}>
+            {t('cart.print')}
+          </Button>
+          <Button variant="primary" onClick={onNewBill}>
+            {t('cart.newBill')}
+          </Button>
+        </div>
       </Modal.Footer>
     </Modal>
   )

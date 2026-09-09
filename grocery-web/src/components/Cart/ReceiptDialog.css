@@ -104,41 +104,87 @@
   margin: 0 0 var(--sp-1);
 }
 
-/* Printing today goes through the browser. Everything but the receipt is
-   hidden, and colours are forced to black on white -- thermal paper has no
-   colour, and a dark theme would otherwise print as a black rectangle.
-   A Bluetooth printer would send these same lines as ESC/POS instead. */
+/* The footer stacks the setup hint above the buttons so the hint reads as
+   guidance rather than as a caption on any one control. */
+.receipt-footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-3);
+}
+
+.receipt-footer__hint {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.receipt-footer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+/* ---------------------------------------------------------------------------
+   Printing to a 58 mm thermal roll.
+
+   Printing goes through the browser and the operating system's print pipeline,
+   which rasterises the page and sends it as a bitmap. That is deliberate rather
+   than a stopgap: this shop's receipts are Hebrew by default, and the ESC/POS
+   text mode these printers expose has no Hebrew code page, so text-mode output
+   would come back as garbage. Rasterising prints Hebrew correctly, and it is
+   also the only path that works on iOS, where Web Bluetooth does not exist.
+
+   Sizes below are literals rather than tokens because @page cannot read custom
+   properties. To move to an 80 mm roll, change `size` and #receipt `width`
+   together (80mm), and widen the side padding to 6mm for a 68 mm image.
+--------------------------------------------------------------------------- */
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    /* Without `size`, the page is laid out for A4 and the bill prints at a
+       fraction of the roll width with the right-hand column pushed off the
+       paper. `auto` height lets the roll run as long as the bill needs. */
+    size: 58mm auto;
+    margin: 0;
   }
 
-  #receipt,
-  #receipt * {
-    visibility: visible;
+  /* The dialog is portalled to <body>, so hide body's other children rather
+     than every element. The previous rule hid `body *` by visibility and then
+     pulled the receipt out of flow with `position: absolute` -- hidden boxes
+     still occupied space, and an out-of-flow box does not paginate, so any
+     bill longer than one page printed truncated. */
+  body > *:not(.modal) {
+    display: none !important;
   }
 
-  #receipt {
-    position: absolute;
-    inset-inline-start: 0;
-    top: 0;
-    width: 100%;
-    max-width: none;
-    color: #000;
+  html,
+  body {
+    width: 58mm;
+    margin: 0;
+    padding: 0;
     background: #fff;
   }
 
-  #receipt .receipt__line-discount,
-  #receipt .receipt__totals-discount {
-    color: #000;
-  }
-
+  /* Collapse the dialog into ordinary flow. `scrollable` puts a max-height and
+     overflow on .modal-body, which would otherwise clip a long bill to the
+     height of the scroll box. */
   .modal,
   .modal-dialog,
-  .modal-content {
-    position: static;
-    border: none;
+  .modal-content,
+  .modal-body {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    max-height: none !important;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     box-shadow: none;
+    background: transparent;
   }
 
   .modal-backdrop,
@@ -146,7 +192,79 @@
     display: none !important;
   }
 
-  @page {
-    margin: 4mm;
+  #receipt {
+    width: 58mm;
+    /* 5 mm of quiet edge each side leaves 48 mm of image, which is exactly the
+       384 dots this class of printer lays down at 203 dpi. Anything wider is
+       simply dropped by the head. */
+    padding: 3mm 5mm;
+    margin: 0;
+    max-width: none;
+    font-size: 8.5pt;
+    line-height: 1.35;
+  }
+
+  /* Thermal paper is monochrome and there is no ink to modulate: every colour
+     resolves to burnt or not burnt. The dark theme's muted greys and success
+     green survive as very faint dots, so the whole receipt is forced to solid
+     black, borders included. */
+  #receipt,
+  #receipt * {
+    color: #000 !important;
+    background: transparent !important;
+    border-color: #000 !important;
+  }
+
+  /* Tighten the screen spacing -- on a roll, generous padding is just paper. */
+  .receipt__lines {
+    padding: 2mm 0;
+  }
+
+  .receipt__line + .receipt__line {
+    margin-top: 1.5mm;
+  }
+
+  /* Never tear a line item in half across a page break. */
+  .receipt__line,
+  .receipt__totals-final {
+    break-inside: avoid;
+  }
+
+  .receipt__shop {
+    font-size: 11pt;
+  }
+
+  .receipt__date,
+  .receipt__line-detail,
+  .receipt__foot {
+    font-size: 7.5pt;
+  }
+
+  .receipt__line-main {
+    font-size: 8.5pt;
+  }
+
+  .receipt__totals {
+    padding-top: 2mm;
+  }
+
+  .receipt__totals-final {
+    margin-top: 1.5mm;
+    padding-top: 1.5mm;
+    font-size: 10pt;
+  }
+
+  .receipt__foot {
+    margin-top: 3mm;
+    padding-top: 2mm;
+  }
+
+  /* Feed enough paper for the last line to clear the tear bar, which sits a
+     little above the head. Without it the total is still under the cover when
+     the roll is torn. */
+  .receipt__foot::after {
+    content: '';
+    display: block;
+    height: 10mm;
   }
 }
