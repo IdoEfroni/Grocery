@@ -11,7 +11,7 @@ Four .NET 8 projects in `Grocery.sln` plus a separate Vite/React app:
 | `Grocery.Api` | ASP.NET Core Web API | Product CRUD, photo upload/retrieval, price comparison. Owns the EF Core model, DTOs, storage abstraction, and the Service Bus message contract. |
 | `Grocery.ThumbnailService` | Worker Service | MassTransit consumer that generates WebP thumbnails. **References `Grocery.Api`** to reuse `IStorageService`, `LocalStorageService`/`BlobStorageService`, and `ThumbnailRequestMessage`. |
 | `Grocery.Data` | Class library | Empty placeholder (`Class1.cs`). All data code actually lives in `Grocery.Api/Data` and `Grocery.Api/Services`. |
-| `Grocery.Tests` | xUnit + FluentAssertions | **Both `ProductRepositoryTests.cs` and `TestDbFactory.cs` are entirely commented out** — the suite runs zero tests. Restoring them needs a `Microsoft.Data.Sqlite` package reference, which the csproj no longer has. |
+| `Grocery.Tests` | xUnit + FluentAssertions | Covers the chp parser and price analyzer (`Fixtures/` holds real captured pages). **`ProductRepositoryTests.cs` and `TestDbFactory.cs` remain entirely commented out** — restoring them needs a `Microsoft.Data.Sqlite` package reference, which the csproj no longer has. |
 | `grocery-web` | React 19 + Vite + react-bootstrap | SPA client. Not part of the solution. Mixed JS/TS — see below. |
 
 The `Grocery.ThumbnailService` → `Grocery.Api` project reference is deliberate but leaky: its Dockerfile does `rm -f Grocery.Api/appsettings*.json` before publish so the API's settings don't shadow the worker's.
@@ -55,7 +55,9 @@ Deployment: pushing to `main` triggers `.github/workflows/deploy.yml`, which bui
 - `Storage:Type` — `Blob` selects `BlobStorageService`, but **only when the environment is Production**; every other combination falls back to `LocalStorageService` (writes to `{ContentRoot}/uploads/photos`).
 - `Cors:AllowedOrigins` — array; falls back to localhost 5173/5174 when unset.
 - `Metrics:Port` (thumbnail service) — defaults to 9090.
+- `Chp:*` — price-scrape tuning: `MinRequestIntervalMs` (4000), `RetryBackoffMs` (4000), `MaxAttempts` (3), `CacheMinutes` (30). See the chp section below before lowering the interval.
 - Frontend reads `VITE_API_BASE_URL` from `.env.development` / `.env.production`; it is baked in at build time, including as a Docker `ARG` in `grocery-web/Dockerfile`.
+- `VITE_SHOPPING_CITY` — **must be Hebrew** (`חיפה`). chp cannot geocode a Latin transliteration; given `Hifa` it returns 200 OK with only its online-retailers table and no nearby branches (11 listings instead of 84), entirely silently.
 
 The Service Bus is on the **Basic tier**, which supports queues but not topics. Both `Program.cs` files therefore call `cfg.Message<ThumbnailRequestMessage>(m => m.SetEntityName(queueName))`, and the consumer sets `ConfigureConsumeTopology = false` and `PublishFaults = false`. Don't reintroduce publish/topic-based MassTransit patterns.
 
@@ -87,8 +89,21 @@ Failures throw out of `Consume` so MassTransit retries (`r.Interval(3, TimeSpan.
 
 ### External integrations
 
-- `ChipApiClient` + `ChipHtmlParser` scrape chp.co.il for price comparison. The parser keys off **Hebrew column names** (`"מחיר"`, `"שם המוצר ותכולה"`, `"יצרן/מותג וברקוד"`) — these string literals are load-bearing, not display text.
 - `DuckDuckGoImageService` backs `GET /api/products/Web-photo-by-sku/{sku}`, which searches the web for a product image rather than reading stored files.
+
+#### chp.co.il price comparison
+
+`ProductsController` → `ProductService` → `IChpPriceLookup` (`ChpPriceLookupService`) → `ChipApiClient` (HTTP + pacing) and `ChipHtmlParser` (HTML → `ChpPriceRow`), with `ChpPriceAnalyzer` deriving the statistics. Hebrew column names and promo wordings (`"מחיר"`, `"מבצע"`, `"אתר אינטרנט"`, `"יחידות ב-"`, `"בתוקף עד"`) are **load-bearing identifiers, not display text**.
+
+Five properties of the upstream site drive this design. All were measured against the live endpoint, and none are guesses:
+
+1. **`num_results` and `from` are ignored by the server.** Responses are byte-identical for values from 5 to 1000 — it always returns every store near the address. The controller still accepts `num_results` so old clients don't break; it does nothing.
+2. **The page has two result tables**, nearby branches and online retailers, and both matter. `SelectNodes`, never `SelectSingleNode` — an earlier version silently dropped every online store.
+3. **The shopping address must be Hebrew.** See the config note above.
+4. **chp serves an anti-scraping page to fast callers.** Every cell is exploded into decoy elements with random `data-*` attributes, zero-width padding (as numeric entities — you must decode before looking for them), and three `<style>` blocks deciding what's visible. `ChipApiClient` paces requests ~4s apart to avoid provoking it (measured: 2s ⇒ ~50% obfuscated, 4s and 6s ⇒ clean); `ChpPriceLookupService` retries with backoff if one slips through, and caches results for 30 min. The parser detects the variant and sets `IsObfuscated` rather than guessing. **Price parsing is deliberately anchored** (`^\d{1,6}([.,]\d{1,2})?$`) — the decoys yield strings like `61.600.60` that a lenient parser would turn into a plausible wrong price.
+5. **Shelf price and promotion price are kept separate, and the reference price is a median.** Some chains carry a permanently inflated shelf price so a standing promotion reads as a large discount (yellow lists Bamba at ₪9.90 across 13 branches against a ₪5.90 market median, then "discounts" to the ₪3.00 everyone else charges). Blending promo prices into a mean would reward that tactic rather than expose it. `ChpPriceAnalyzer` therefore reports a median `TypicalPrice`, flags inflated listings separately, and splits recommendations into `BestSingleUnit` and `BestBulk` — because `"10 יחידות ב- 30.00 ש"ח"` is not what one item costs.
+
+`Grocery.Tests/Fixtures/` holds pages captured verbatim from chp (one ordinary, one anti-scraping) as parser regression inputs.
 
 ### Frontend
 

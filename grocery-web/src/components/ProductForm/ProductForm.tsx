@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, Form, InputGroup, Spinner } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { comparePrices } from '../../api/products'
-import { COMPARE_RESULT_COUNT, SHOPPING_CITY } from '../../config'
+import { SHOPPING_CITY } from '../../config'
 import { useProductPhoto } from '../../hooks/useProductPhoto'
 import BarcodeScanner from '../BarcodeScanner/BarcodeScanner'
 import CameraCapture from '../CameraCapture/CameraCapture'
@@ -105,7 +105,7 @@ export default function ProductForm({
     setIsAutoFilling(true)
     setAutoFillNote(null)
     try {
-      const result = await comparePrices(SHOPPING_CITY, trimmed, COMPARE_RESULT_COUNT, {
+      const result = await comparePrices(SHOPPING_CITY, trimmed, {
         signal: controller.signal,
       })
       if (controller.signal.aborted) return
@@ -123,8 +123,9 @@ export default function ProductForm({
           matched = true
         }
         if (result.description) next.description = merge(v.description, result.description)
-        if (result.averagePrice && result.averagePrice !== 'N/A') {
-          const parsed = Number.parseFloat(result.averagePrice)
+        // The median, not the mean -- see the note on ProductCompareResponse.
+        if (result.typicalPrice && result.typicalPrice !== 'N/A') {
+          const parsed = Number.parseFloat(result.typicalPrice)
           if (!Number.isNaN(parsed)) {
             next.price = merge(v.price, String(parsed))
             matched = true

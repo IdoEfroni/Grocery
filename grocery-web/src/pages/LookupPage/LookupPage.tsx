@@ -3,8 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Alert, Button, Spinner } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { ApiError } from '../../api/http'
-import { comparePrices, getBySku, type Product } from '../../api/products'
-import { COMPARE_RESULT_COUNT, SHOPPING_CITY } from '../../config'
+import {
+  comparePrices,
+  getBySku,
+  type Product,
+  type ProductCompareResponse,
+} from '../../api/products'
+import { SHOPPING_CITY } from '../../config'
 import ProductPriceCard from '../../components/ProductPriceCard/ProductPriceCard'
 import MarketPriceHint from '../../components/MarketPriceHint/MarketPriceHint'
 import QuickPriceEdit from '../../components/QuickPriceEdit/QuickPriceEdit'
@@ -35,7 +40,7 @@ export default function LookupPage() {
   const [editingPrice, setEditingPrice] = useState(false)
 
   const [marketLoading, setMarketLoading] = useState(false)
-  const [marketPrice, setMarketPrice] = useState<string | null>(null)
+  const [market, setMarket] = useState<ProductCompareResponse | null>(null)
   const [marketName, setMarketName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -43,7 +48,7 @@ export default function LookupPage() {
     const controller = new AbortController()
 
     setState({ status: 'loading' })
-    setMarketPrice(null)
+    setMarket(null)
     setMarketName(null)
 
     getBySku(sku, { signal: controller.signal })
@@ -69,14 +74,14 @@ export default function LookupPage() {
     const controller = new AbortController()
 
     setMarketLoading(true)
-    comparePrices(SHOPPING_CITY, sku, COMPARE_RESULT_COUNT, { signal: controller.signal })
+    comparePrices(SHOPPING_CITY, sku, { signal: controller.signal })
       .then((result) => {
         if (controller.signal.aborted) return
-        setMarketPrice(result.averagePrice && result.averagePrice !== 'N/A' ? result.averagePrice : null)
+        setMarket(result)
         setMarketName(result.productName || null)
       })
       .catch(() => {
-        if (!controller.signal.aborted) setMarketPrice(null)
+        if (!controller.signal.aborted) setMarket(null)
       })
       .finally(() => {
         if (!controller.signal.aborted) setMarketLoading(false)
@@ -142,7 +147,7 @@ export default function LookupPage() {
 
           <MarketPriceHint
             loading={marketLoading}
-            averagePrice={marketPrice}
+            market={market}
             productName={marketName}
           />
 

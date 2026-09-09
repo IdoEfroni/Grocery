@@ -23,9 +23,13 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddHttpClient<DuckDuckGoImageService>();
 builder.Services.AddHttpClient<IPhotoService, PhotoService>();
-builder.Services.AddHttpClient("ChpCompare");
-builder.Services.AddScoped<ChipHtmlParser>();
-builder.Services.AddScoped<ChipApiClient>();
+builder.Services.AddHttpClient("ChpCompare", client => client.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ChipHtmlParser>();
+// Singleton: ChipApiClient holds the pacing gate that keeps chp from serving its
+// unparseable anti-scraping page, which only works if every caller shares one instance.
+builder.Services.AddSingleton<ChipApiClient>();
+builder.Services.AddSingleton<IChpPriceLookup, ChpPriceLookupService>();
 
 // Configure storage service based on environment
 var storageType = builder.Configuration["Storage:Type"] ?? "Local";

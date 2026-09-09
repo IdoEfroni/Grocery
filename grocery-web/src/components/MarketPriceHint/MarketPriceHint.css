@@ -32,8 +32,34 @@
   margin: 0 0 0.5rem;
 }
 
+.market-hint__basis {
+  font-size: 0.8125rem;
+  opacity: 0.8;
+  margin: 0 0 0.5rem;
+}
+
+.market-hint__deal {
+  font-size: 0.9375rem;
+  margin: 0 0 0.25rem;
+  line-height: 1.4;
+}
+
+.market-hint__deal-label {
+  font-weight: 600;
+}
+
+/* The point of this line is that the reader treats those listings with suspicion,
+   so it must not read as just another neutral detail. */
+.market-hint__inflated {
+  font-size: 0.875rem;
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+  font-style: italic;
+  opacity: 0.9;
+}
+
 .market-hint__warning {
   font-size: 0.9375rem;
-  margin: 0;
+  margin: 0.5rem 0 0;
   line-height: 1.4;
 }

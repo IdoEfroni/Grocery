@@ -14,23 +14,20 @@ public class ProductService : IProductService
 {
     private readonly IProductRepository _repository;
     private readonly IPhotoService _photoService;
-    private readonly ChipHtmlParser _chipParser;
-    private readonly ChipApiClient _chipApiClient;
+    private readonly IChpPriceLookup _chpPriceLookup;
     private readonly DuckDuckGoImageService _duckDuckGoImageService;
     private readonly ILogger<ProductService> _logger;
 
     public ProductService(
         IProductRepository repository,
         IPhotoService photoService,
-        ChipHtmlParser chipParser,
-        ChipApiClient chipApiClient,
+        IChpPriceLookup chpPriceLookup,
         DuckDuckGoImageService duckDuckGoImageService,
         ILogger<ProductService> logger)
     {
         _repository = repository;
         _photoService = photoService;
-        _chipParser = chipParser;
-        _chipApiClient = chipApiClient;
+        _chpPriceLookup = chpPriceLookup;
         _duckDuckGoImageService = duckDuckGoImageService;
         _logger = logger;
     }
@@ -252,42 +249,57 @@ public class ProductService : IProductService
     /// <summary>
     /// Fetches price comparison data from the external service (chp.co.il) for the given shopping city and product SKU, and returns product name, description, and average price.
     /// </summary>
-    /// <param name="shoppingCity">Shopping city/address for the comparison.</param>
+    /// <param name="shoppingCity">Shopping address for the comparison. Must be in Hebrew — chp cannot geocode a Latin transliteration.</param>
     /// <param name="sku">Product barcode/SKU.</param>
-    /// <param name="numResults">Maximum number of results to consider (clamped by the external API).</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>DTO with product name, description, and formatted average price.</returns>
+    /// <returns>DTO with product details, a reference price, and buying recommendations.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="shoppingCity"/> or <paramref name="sku"/> is null or whitespace.</exception>
     /// <exception cref="ComparePricesException">Thrown when the external comparison service returns a non-success response.</exception>
-    public async Task<ProductCompareResponseDto> ComparePricesAsync(string shoppingCity, string sku, int numResults, CancellationToken ct = default)
+    public async Task<ProductCompareResponseDto> ComparePricesAsync(string shoppingCity, string sku, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(shoppingCity))
             throw new ArgumentException("shopping_city is required.", nameof(shoppingCity));
         if (string.IsNullOrWhiteSpace(sku))
             throw new ArgumentException("sku is required.", nameof(sku));
 
-        var (isSuccess, statusCode, body) = await _chipApiClient.GetCompareResultsHtmlAsync(shoppingCity, sku, numResults);
-        if (!isSuccess)
-        {
-            _logger.LogWarning("Compare prices failed: status={StatusCode}, sku={Sku}", statusCode, sku);
-            throw new ComparePricesException(statusCode, body);
-        }
+        var result = await _chpPriceLookup.LookupAsync(shoppingCity, sku, ct);
+        var summary = ChpPriceAnalyzer.Summarize(result.Rows);
 
-        var rows = _chipParser.ParseCompareResultsHtml(body);
-        var info = _chipParser.ParseProductInformation(body);
-        info.TryGetValue("שם המוצר ותכולה", out var productName);
-        info.TryGetValue("יצרן/מותג וברקוד", out var description);
-
-        var avg = CalculateAveragePrice(rows);
-        var avgPriceFormatted = avg?.ToString("0.00") ?? "N/A";
+        _logger.LogDebug(
+            "Compare prices for Sku={Sku}: rows={Rows} (inStore={InStore}, online={Online}), inflated={Inflated}, degraded={Degraded}",
+            sku, summary.ResultCount, summary.InStoreCount, summary.OnlineCount,
+            summary.InflatedOffers.Count, result.IsObfuscated);
 
         return new ProductCompareResponseDto
         {
-            ProductName = productName ?? string.Empty,
-            Description = description ?? string.Empty,
-            AveragePrice = avgPriceFormatted
+            ProductName = result.ProductName,
+            Description = result.Description,
+            AveragePrice = FormatPrice(summary.AverageRegularPrice),
+            TypicalPrice = FormatPrice(summary.TypicalPrice),
+            BestSingleUnit = ToDto(summary.BestSingleUnit),
+            HighestRealPrice = ToDto(summary.HighestRealOffer),
+            BestBulk = ToDto(summary.BestBulk),
+            InflatedOffers = summary.InflatedOffers.Select(ToDto).Where(o => o is not null).ToList()!,
+            ResultCount = summary.ResultCount,
+            InStoreCount = summary.InStoreCount,
+            OnlineCount = summary.OnlineCount,
+            Degraded = result.IsObfuscated
         };
     }
+
+    private static string FormatPrice(decimal? value) => value?.ToString("0.00") ?? "N/A";
+
+    private static PriceOfferDto? ToDto(ChpPriceOffer? offer) => offer is null ? null : new PriceOfferDto
+    {
+        Price = offer.Price.ToString("0.00"),
+        Chain = offer.Chain,
+        StoreName = offer.StoreName,
+        Location = offer.Location,
+        Source = offer.Source.ToString(),
+        RequiredQuantity = offer.RequiredQuantity,
+        PromotionDescription = offer.PromotionDescription,
+        ExpiresOn = offer.ExpiresOn?.ToString("yyyy-MM-dd")
+    };
 
     /// <summary>
     /// Saves a photo from file or URL when provided; no-op when neither is set or SKU is missing. Wraps photo service errors in <see cref="PhotoSaveException"/>.
@@ -333,22 +345,4 @@ public class ProductService : IProductService
         }
     }
 
-    /// <summary>
-    /// Extracts price values from the "מחיר" key in each row and returns their average, or null if no valid prices.
-    /// </summary>
-    private static decimal? CalculateAveragePrice(List<Dictionary<string, string>> rows)
-    {
-        var prices = rows
-            .Select(r => r.TryGetValue("מחיר", out var v) ? v : null)
-            .Where(v => !string.IsNullOrWhiteSpace(v))
-            .Select(v => decimal.TryParse(v, out var d) ? d : (decimal?)null)
-            .Where(d => d.HasValue)
-            .Select(d => d!.Value)
-            .ToList();
-
-        if (prices.Count == 0)
-            return null;
-
-        return prices.Average();
-    }
 }
