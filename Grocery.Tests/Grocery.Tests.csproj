@@ -25,4 +25,11 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- Pages captured verbatim from chp.co.il, used as parser regression inputs. -->
+  <ItemGroup>
+    <None Include="Fixtures\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

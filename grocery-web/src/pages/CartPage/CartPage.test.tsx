@@ -7,6 +7,7 @@ import { CartProvider } from '../../contexts/CartContext'
 import CartPage from './CartPage'
 import { ApiError } from '../../api/http'
 import * as products from '../../api/products'
+import { compareResponse } from '../../api/products.testFactory'
 
 // Drive the scan directly: the camera itself is covered by the scanner's own
 // tests, and what matters here is what the till does with a barcode.
@@ -79,11 +80,9 @@ describe('CartPage', () => {
 
   it('an unknown barcode asks for a price and suggests one from the web', async () => {
     vi.spyOn(products, 'getBySku').mockRejectedValue(new ApiError(404, 'Not Found', ''))
-    vi.spyOn(products, 'comparePrices').mockResolvedValue({
-      productName: 'Bulgarian Cheese',
-      description: '',
-      averagePrice: '21.27',
-    })
+    vi.spyOn(products, 'comparePrices').mockResolvedValue(
+      compareResponse({ productName: 'Bulgarian Cheese', typicalPrice: '21.27' }),
+    )
     setup()
 
     await userEvent.click(screen.getByRole('button', { name: /scan an item/i }))
@@ -98,11 +97,9 @@ describe('CartPage', () => {
 
   it('labels the suggestion as external, not the shop price', async () => {
     vi.spyOn(products, 'getBySku').mockRejectedValue(new ApiError(404, 'Not Found', ''))
-    vi.spyOn(products, 'comparePrices').mockResolvedValue({
-      productName: 'X',
-      description: '',
-      averagePrice: '21.27',
-    })
+    vi.spyOn(products, 'comparePrices').mockResolvedValue(
+      compareResponse({ productName: 'X', typicalPrice: '21.27' }),
+    )
     setup()
 
     await userEvent.click(screen.getByRole('button', { name: /scan an item/i }))
@@ -113,11 +110,9 @@ describe('CartPage', () => {
 
   it('flags unregistered items and keeps the reminder on screen', async () => {
     vi.spyOn(products, 'getBySku').mockRejectedValue(new ApiError(404, 'Not Found', ''))
-    vi.spyOn(products, 'comparePrices').mockResolvedValue({
-      productName: 'Cheese',
-      description: '',
-      averagePrice: '21.27',
-    })
+    vi.spyOn(products, 'comparePrices').mockResolvedValue(
+      compareResponse({ productName: 'Cheese', typicalPrice: '21.27' }),
+    )
     setup()
 
     await userEvent.click(screen.getByRole('button', { name: /scan an item/i }))

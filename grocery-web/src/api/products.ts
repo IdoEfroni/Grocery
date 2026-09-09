@@ -19,11 +19,56 @@ export interface PagedResult<T> {
   items: T[]
 }
 
+/** A price at a named store, with whatever conditions make it obtainable. */
+export interface PriceOffer {
+  /** Per-unit price, formatted to 2dp. */
+  price: string
+  chain: string
+  storeName: string
+  location: string
+  source: 'InStore' | 'Online'
+  /** Units that must be bought for `price` to apply. 1 for a single item. */
+  requiredQuantity: number
+  /** The promotion's own wording, when this price comes from one. */
+  promotionDescription: string | null
+  /** Promotion expiry as yyyy-MM-dd. */
+  expiresOn: string | null
+}
+
 export interface ProductCompareResponse {
   productName: string
   description: string
-  /** Formatted to 2dp by the API, or the literal string 'N/A'. */
+  /**
+   * Plain mean of every shelf price, formatted to 2dp, or 'N/A'.
+   *
+   * @deprecated Prefer `typicalPrice`. A mean is dragged around by chains that
+   * carry an inflated shelf price so a standing promotion reads as a big discount.
+   */
   averagePrice: string
+  /**
+   * Median shelf price with inflated-then-discounted listings excluded, or 'N/A'.
+   * The honest "what does this normally cost" figure.
+   */
+  typicalPrice: string
+  /** Cheapest price obtainable buying a single unit. */
+  bestSingleUnit: PriceOffer | null
+  /**
+   * The dearest genuine shelf price, with inflated-then-discounted listings left out.
+   * Not the raw maximum — that is usually the padded sticker price nobody pays.
+   */
+  highestRealPrice: PriceOffer | null
+  /** Cheapest per-unit price via a multi-buy, when it beats buying one. */
+  bestBulk: PriceOffer | null
+  /** Listings whose high shelf price plus standing promotion looks like inflate-then-discount. */
+  inflatedOffers: PriceOffer[]
+  resultCount: number
+  inStoreCount: number
+  onlineCount: number
+  /**
+   * True when chp served its anti-scraping page and no price could be read --
+   * distinct from a barcode that genuinely has no listings.
+   */
+  degraded: boolean
 }
 
 export interface ProductUpsert {
@@ -61,17 +106,18 @@ export function deleteProduct(id: string, options: RequestOptions = {}): Promise
   return http(`/api/products/${id}`, { ...options, method: 'DELETE' })
 }
 
+/**
+ * Prices for a barcode near a shopping address, from the chp.co.il comparison scrape.
+ *
+ * There is no result-count parameter: chp's endpoint ignores one, always returning
+ * every store near the address, so asking for a number was never doing anything.
+ */
 export function comparePrices(
   shoppingCity: string,
   sku: string,
-  numResults = 100,
   options: RequestOptions = {},
 ): Promise<ProductCompareResponse> {
-  const q = new URLSearchParams({
-    shopping_city: shoppingCity,
-    sku,
-    num_results: String(numResults),
-  })
+  const q = new URLSearchParams({ shopping_city: shoppingCity, sku })
   return http(`/api/products/compare-prices?${q}`, options)
 }
 

@@ -192,17 +192,27 @@ public class ProductsController : ControllerBase
         }
     }
 
-    /// <summary>GET /api/products/compare-prices?shopping_city=&amp;sku=&amp;num_results=</summary>
+    /// <summary>GET /api/products/compare-prices?shopping_city=&amp;sku=</summary>
+    /// <param name="shopping_city">
+    /// Shopping address, in Hebrew ("חיפה"). chp cannot geocode a Latin transliteration
+    /// and answers one with online retailers only, no nearby branches.
+    /// </param>
+    /// <param name="sku">Product barcode.</param>
+    /// <param name="num_results">
+    /// Accepted and ignored. chp's own endpoint ignores it too — it always returns every
+    /// store near the address — so the parameter is kept only so existing clients do not
+    /// break. Do not add new callers that pass it.
+    /// </param>
     [HttpGet("compare-prices")]
     public async Task<ActionResult<ProductCompareResponseDto>> ComparePrices(
         [FromQuery] string shopping_city,
         [FromQuery] string sku,
-        [FromQuery] int num_results = 100,
+        [FromQuery] int? num_results = null,
         CancellationToken ct = default)
     {
         try
         {
-            var response = await _productService.ComparePricesAsync(shopping_city, sku, num_results, ct);
+            var response = await _productService.ComparePricesAsync(shopping_city, sku, ct);
             return Ok(response);
         }
         catch (ArgumentException ex)

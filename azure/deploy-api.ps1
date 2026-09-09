@@ -10,7 +10,12 @@ Set-Location $rootDir
 # Configuration
 $acr = "groceryregistryef"
 $image = "grocery-api"
-$tag = "latest"
+# A unique tag per deploy. Deploying `:latest` repeatedly is a silent no-op:
+# Azure Container Apps derives a revision from the container template, so an
+# unchanged image reference means no new revision and no image re-pull -- the
+# old container keeps serving while the new image sits unused in ACR.
+$tag = Get-Date -Format "yyyyMMdd-HHmmss"
+$latestTag = "latest"
 $rg = "rg-grocery-uae"
 $app = "grocery-api"
 $dockerfilePath = "Grocery.Api\Dockerfile"
@@ -125,19 +130,31 @@ Write-Host "✅ Docker image built successfully" -ForegroundColor Green
 Write-Host ""
 Write-Host "Tagging image for ACR..." -ForegroundColor Yellow
 $acrImage = "${acr}.azurecr.io/${image}:${tag}"
+$acrLatest = "${acr}.azurecr.io/${image}:${latestTag}"
 docker tag "${image}:${tag}" $acrImage
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to tag Docker image" -ForegroundColor Red
     exit 1
 }
+docker tag "${image}:${tag}" $acrLatest
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Failed to tag Docker image as latest" -ForegroundColor Red
+    exit 1
+}
 Write-Host "✅ Image tagged: $acrImage" -ForegroundColor Green
+Write-Host "✅ Image tagged: $acrLatest" -ForegroundColor Green
 
-# Push image to ACR
+# Push image to ACR (unique tag drives the deploy; latest is kept as a pointer)
 Write-Host ""
 Write-Host "Pushing image to ACR..." -ForegroundColor Yellow
 docker push $acrImage
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to push image to ACR" -ForegroundColor Red
+    exit 1
+}
+docker push $acrLatest
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Failed to push latest tag to ACR" -ForegroundColor Red
     exit 1
 }
 Write-Host "✅ Image pushed to ACR successfully" -ForegroundColor Green

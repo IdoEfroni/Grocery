@@ -5,7 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import { useCart } from '../../contexts/CartContext'
 import { ApiError } from '../../api/http'
 import { comparePrices, getBySku } from '../../api/products'
-import { COMPARE_RESULT_COUNT, SHOPPING_CITY } from '../../config'
+import { SHOPPING_CITY } from '../../config'
 import {
   discountAmountAgorot,
   fromAgorot,
@@ -88,17 +88,17 @@ export default function CartPage() {
     })
 
     try {
-      const result = await comparePrices(SHOPPING_CITY, sku, COMPARE_RESULT_COUNT, {
-        signal: controller.signal,
-      })
+      const result = await comparePrices(SHOPPING_CITY, sku, { signal: controller.signal })
       if (controller.signal.aborted) return
-      const parsed = Number.parseFloat(result.averagePrice)
+      // The median, not the mean: a handful of branches carrying an inflated shelf
+      // price would otherwise pull the suggestion above what the item really costs.
+      const parsed = Number.parseFloat(result.typicalPrice)
       setPending((current) =>
         current?.status === 'unknown' && current.sku === sku
           ? {
               ...current,
               suggestedName: result.productName || null,
-              suggestedPrice: Number.isFinite(parsed) && result.averagePrice !== 'N/A' ? parsed : null,
+              suggestedPrice: Number.isFinite(parsed) && result.typicalPrice !== 'N/A' ? parsed : null,
               priceLoading: false,
             }
           : current,

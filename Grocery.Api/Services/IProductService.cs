@@ -24,5 +24,5 @@ public interface IProductService
 
     Task<(byte[] Bytes, string ContentType)?> GetWebPhotoBySkuAsync(string sku, CancellationToken ct = default);
 
-    Task<ProductCompareResponseDto> ComparePricesAsync(string shoppingCity, string sku, int numResults, CancellationToken ct = default);
+    Task<ProductCompareResponseDto> ComparePricesAsync(string shoppingCity, string sku, CancellationToken ct = default);
 }
