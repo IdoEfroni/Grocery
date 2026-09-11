@@ -1,0 +1,64 @@
+.add-by-name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.add-by-name__label {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--sp-1);
+}
+
+.add-by-name__results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md, 0.5rem);
+  overflow: hidden;
+}
+
+.add-by-name__results li + li {
+  border-top: 1px solid var(--border-strong);
+}
+
+/* A whole-row target: this is used one-handed at a till, and a small tap area
+   next to a customer is how the wrong item gets added. */
+.add-by-name__result {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  min-height: 3rem;
+  background: none;
+  border: none;
+  text-align: start;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.add-by-name__result:hover,
+.add-by-name__result:focus-visible {
+  background: var(--surface-sunken, rgba(127, 127, 127, 0.12));
+}
+
+.add-by-name__result-name {
+  overflow-wrap: anywhere;
+}
+
+.add-by-name__result-price {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-medium);
+}
+
+.add-by-name__empty {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}

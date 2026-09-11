@@ -1,3 +1,9 @@
+/* Barcode-less items say so in words rather than showing an empty slot. */
+.add-to-cart__sku--none {
+  font-family: inherit;
+  font-style: italic;
+}
+
 .add-to-cart__sku {
   font-size: var(--fs-xs);
   color: var(--text-muted);

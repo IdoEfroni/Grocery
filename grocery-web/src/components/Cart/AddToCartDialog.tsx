@@ -5,6 +5,13 @@ import { NO_DISCOUNT } from '../../utils/money'
 import type { CartLine } from '../../contexts/CartContext'
 import './AddToCartDialog.css'
 
+/**
+ * An item on its way to the bill.
+ *
+ * `sku` is an empty string for an item that has no barcode -- loose bread and
+ * the like, added by typing a name. Nothing merges lines by SKU, so blank ones
+ * do not collide.
+ */
 export type PendingScan =
   | { status: 'looking'; sku: string }
   | { status: 'found'; sku: string; name: string; unitPrice: number; productId: string }
@@ -105,9 +112,17 @@ export default function AddToCartDialog({ pending, onCancel, onConfirm }: AddToC
 
         {pending.status !== 'looking' && (
           <>
-            <p className="add-to-cart__sku" dir="ltr">
-              {pending.sku}
-            </p>
+            {/* A barcode-less item has nothing to show here, and an empty
+                monospace line reads as a rendering fault. */}
+            {pending.sku ? (
+              <p className="add-to-cart__sku" dir="ltr">
+                {pending.sku}
+              </p>
+            ) : (
+              <p className="add-to-cart__sku add-to-cart__sku--none">
+                {t('cart.noBarcodeItem')}
+              </p>
+            )}
 
             {isUnknown ? (
               <>
@@ -149,15 +164,24 @@ export default function AddToCartDialog({ pending, onCancel, onConfirm }: AddToC
               {/* The suggestion comes from a public comparison site, not the
                   shop. Saying so keeps it from being mistaken for a real price
                   that someone has already approved. */}
-              {isUnknown && pending.priceLoading && (
+              {/* All three lines describe a barcode lookup. With no barcode none
+                  was attempted, so saying "no suggestion was found" would report
+                  a failure that never happened. */}
+              {isUnknown && pending.sku !== '' && pending.priceLoading && (
                 <Form.Text className="text-muted">{t('cart.fetchingSuggestion')}</Form.Text>
               )}
-              {isUnknown && !pending.priceLoading && pending.suggestedPrice != null && (
-                <Form.Text className="text-muted">{t('cart.suggestionSource')}</Form.Text>
-              )}
-              {isUnknown && !pending.priceLoading && pending.suggestedPrice == null && (
-                <Form.Text className="text-muted">{t('cart.noSuggestion')}</Form.Text>
-              )}
+              {isUnknown &&
+                pending.sku !== '' &&
+                !pending.priceLoading &&
+                pending.suggestedPrice != null && (
+                  <Form.Text className="text-muted">{t('cart.suggestionSource')}</Form.Text>
+                )}
+              {isUnknown &&
+                pending.sku !== '' &&
+                !pending.priceLoading &&
+                pending.suggestedPrice == null && (
+                  <Form.Text className="text-muted">{t('cart.noSuggestion')}</Form.Text>
+                )}
             </Form.Group>
 
             <Form.Group>

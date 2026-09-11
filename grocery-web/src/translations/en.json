@@ -212,7 +212,12 @@
   "cart": {
     "title": "Calculate cart",
     "scanItem": "Scan an item",
-    "empty": "Nothing scanned yet. Tap Scan an item to start a bill.",
+    "orTypeName": "Or type a name, for items with no barcode",
+    "nameSearchPlaceholder": "Bread, tomatoes…",
+    "noNameMatch": "Nothing in the system matches \"{query}\".",
+    "addWithoutBarcode": "Add it without a barcode",
+    "noBarcodeItem": "No barcode",
+    "empty": "Nothing added yet. Scan an item, or type a name to start a bill.",
     "addTitle": "Add to bill",
     "addUnknownTitle": "New item — set a price",
     "addToBill": "Add to bill",

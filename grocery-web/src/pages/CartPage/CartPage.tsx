@@ -4,7 +4,7 @@ import { Alert, Button, Modal } from 'react-bootstrap'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useCart } from '../../contexts/CartContext'
 import { ApiError } from '../../api/http'
-import { comparePrices, getBySku } from '../../api/products'
+import { comparePrices, getBySku, type Product } from '../../api/products'
 import { SHOPPING_CITY } from '../../config'
 import {
   discountAmountAgorot,
@@ -18,6 +18,7 @@ import { formatPrice } from '../../utils/formatPrice'
 import BarcodeScanner from '../../components/BarcodeScanner/BarcodeScanner'
 import Icon from '../../components/Icon/Icon'
 import AddToCartDialog, { type PendingScan } from '../../components/Cart/AddToCartDialog'
+import AddByName from '../../components/Cart/AddByName'
 import DiscountDialog from '../../components/Cart/DiscountDialog'
 import ReceiptDialog from '../../components/Cart/ReceiptDialog'
 import type { CartLine } from '../../contexts/CartContext'
@@ -32,6 +33,12 @@ import './CartPage.css'
  * rather than invent. Unknown items are flagged for registering afterwards, so
  * the gap in the catalogue is visible rather than quietly repeated at every
  * sale.
+ *
+ * Typing a name is the second way in, for stock that carries no barcode at all
+ * -- loose bread, produce, anything repackaged in the shop. A match in the
+ * catalogue is charged at the shop's own price; when nothing matches, the item
+ * still reaches the bill at a price entered here and is flagged like any other
+ * unregistered line.
  */
 export default function CartPage() {
   const { t, language } = useLanguage()
@@ -48,11 +55,19 @@ export default function CartPage() {
 
   const scanAbortRef = useRef<AbortController | null>(null)
 
+  /**
+   * How the pending item arrived. Confirming a scan returns to the scanner,
+   * since a basket is many items; confirming a typed one must not, or the
+   * camera opens over a cashier who is still typing.
+   */
+  const pendingOriginRef = useRef<'scan' | 'name'>('scan')
+
   const handleScan = useCallback(async (sku: string) => {
     scanAbortRef.current?.abort()
     const controller = new AbortController()
     scanAbortRef.current = controller
 
+    pendingOriginRef.current = 'scan'
     setError(null)
     setPending({ status: 'looking', sku })
 
@@ -113,6 +128,39 @@ export default function CartPage() {
     }
   }, [])
 
+  /** A catalogue product chosen by name. Its own price applies, barcode or not. */
+  const handlePickByName = useCallback((product: Product) => {
+    scanAbortRef.current?.abort()
+    pendingOriginRef.current = 'name'
+    setError(null)
+    setPending({
+      status: 'found',
+      sku: product.sku ?? '',
+      name: product.name,
+      unitPrice: product.price,
+      productId: product.id,
+    })
+  }, [])
+
+  /**
+   * Nothing in the catalogue matched. The sale still has to go through, so the
+   * item is added at a price typed at the till and flagged for registering --
+   * the same treatment an unrecognised barcode gets. There is no barcode to
+   * look up, so no price can be suggested.
+   */
+  const handleAddWithoutBarcode = useCallback((name: string) => {
+    scanAbortRef.current?.abort()
+    pendingOriginRef.current = 'name'
+    setError(null)
+    setPending({
+      status: 'unknown',
+      sku: '',
+      suggestedName: name,
+      suggestedPrice: null,
+      priceLoading: false,
+    })
+  }, [])
+
   const finalise = () => {
     setIssuedAt(new Date())
     setShowReceipt(true)
@@ -156,14 +204,20 @@ export default function CartPage() {
         </Alert>
       )}
 
-      <Button
-        variant="primary"
-        size="lg"
-        className="cart-page__scan"
-        onClick={() => setShowScanner(true)}
-      >
-        <Icon name="barcode" size="1.5rem" /> {t('cart.scanItem')}
-      </Button>
+      <div className="cart-page__add">
+        <Button
+          variant="primary"
+          size="lg"
+          className="cart-page__scan"
+          onClick={() => setShowScanner(true)}
+        >
+          <Icon name="barcode" size="1.5rem" /> {t('cart.scanItem')}
+        </Button>
+
+        {/* Scanning stays the primary path; typing is for what has no barcode
+            to scan in the first place. */}
+        <AddByName onPick={handlePickByName} onAddWithoutBarcode={handleAddWithoutBarcode} />
+      </div>
 
       {isEmpty ? (
         <p className="cart-page__empty">{t('cart.empty')}</p>
@@ -282,8 +336,9 @@ export default function CartPage() {
           cart.addLine(line)
           setPending(null)
           // Straight back to the scanner: a basket is many items, and stopping
-          // between each one is the difference between usable and not.
-          setShowScanner(true)
+          // between each one is the difference between usable and not. Only for
+          // scanned items though -- see pendingOriginRef.
+          if (pendingOriginRef.current === 'scan') setShowScanner(true)
         }}
       />
 

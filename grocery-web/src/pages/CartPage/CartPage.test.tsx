@@ -164,6 +164,98 @@ describe('CartPage', () => {
     expect(screen.getByRole('button', { name: /print/i })).toBeInTheDocument()
   })
 
+  it('finds a barcode-less product by name and charges the catalogue price', async () => {
+    // Bread: registered, priced, no barcode. Before name search it could not
+    // reach the bill at all.
+    const bread: products.Product = {
+      id: 'bread-1',
+      name: 'Fresh bread',
+      description: null,
+      price: 12.5,
+      sku: null,
+      createdAt: '',
+      updatedAt: '',
+    }
+    const search = vi.spyOn(products, 'searchProducts').mockResolvedValue({
+      page: 1,
+      pageSize: 6,
+      total: 1,
+      items: [bread],
+    })
+    const { container } = setup()
+
+    await userEvent.type(screen.getByLabelText(/type a name/i), 'bread')
+
+    await userEvent.click(await screen.findByRole('button', { name: /fresh bread/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /add to bill/i }))
+
+    expect(search).toHaveBeenCalled()
+    expect(await screen.findByText('Fresh bread')).toBeInTheDocument()
+
+    // The catalogue price, on the bill line itself.
+    const line = container.querySelector('.cart-line')
+    expect(line).toHaveTextContent(/12\.50/)
+
+    // Charged from the catalogue, so it is not flagged as unregistered.
+    expect(screen.queryByText(/not registered/i)).not.toBeInTheDocument()
+  })
+
+  it('does not reopen the camera after an item added by name', async () => {
+    vi.spyOn(products, 'searchProducts').mockResolvedValue({
+      page: 1,
+      pageSize: 6,
+      total: 1,
+      items: [
+        {
+          id: 'bread-1',
+          name: 'Fresh bread',
+          description: null,
+          price: 12.5,
+          sku: null,
+          createdAt: '',
+          updatedAt: '',
+        },
+      ],
+    })
+    setup()
+
+    await userEvent.type(screen.getByLabelText(/type a name/i), 'bread')
+    await userEvent.click(await screen.findByRole('button', { name: /fresh bread/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /add to bill/i }))
+
+    // Returning to the scanner is right after a scan, but here it would throw
+    // the camera over a cashier who is still typing.
+    expect(screen.queryByTestId('scanner-open')).not.toBeInTheDocument()
+  })
+
+  it('still sells an item the catalogue has never heard of', async () => {
+    vi.spyOn(products, 'searchProducts').mockResolvedValue({
+      page: 1,
+      pageSize: 6,
+      total: 0,
+      items: [],
+    })
+    const compare = vi.spyOn(products, 'comparePrices')
+    setup()
+
+    await userEvent.type(screen.getByLabelText(/type a name/i), 'olives')
+    await userEvent.click(await screen.findByRole('button', { name: /without a barcode/i }))
+
+    // No barcode means nothing to look up, so the price service must not be
+    // called and must not be blamed for having no suggestion.
+    expect(compare).not.toHaveBeenCalled()
+    expect(screen.queryByText(/no suggestion/i)).not.toBeInTheDocument()
+    // Exact text: the search label also mentions items with no barcode.
+    expect(screen.getByText('No barcode')).toBeInTheDocument()
+
+    await userEvent.clear(screen.getByLabelText(/price to charge/i))
+    await userEvent.type(screen.getByLabelText(/price to charge/i), '8')
+    await userEvent.click(screen.getByRole('button', { name: /add to bill/i }))
+
+    expect(await screen.findByText('olives')).toBeInTheDocument()
+    expect(screen.getByText(/not registered/i)).toBeInTheDocument()
+  })
+
   it('sends the bill to the printer and keeps it on screen afterwards', async () => {
     // jsdom has no print implementation, so window.print is not merely mocked
     // for assertion -- without this the click throws "not implemented".
